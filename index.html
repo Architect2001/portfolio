@@ -3,19 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page Closed</title>
+<title>文档分类 · 颜色标记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; color: #333; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
-  .msg { max-width: 480px; }
-  h1 { font-size: 2em; margin-bottom: 0.5em; }
-  p { font-size: 1.1em; line-height: 1.6; color: #666; }
+  :root{
+    --bg:#f0f2f5; --panel:#ffffff; --line:#dce0e6;
+    --txt:#1f2937; --dim:#6b7280; --faint:#9ca3af;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+    --red:#dc2626; --red-bg:#fef2f2; --red-line:#fecaca;
+    --green:#16a34a; --green-bg:#f0fdf4; --green-line:#bbf7d0;
+    --yellow:#ca8a04; --yellow-bg:#fefce8; --yellow-line:#fde68a;
+    --blue:#2563eb; --blue-bg:#eff6ff; --blue-line:#bfdbfe;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--sans);background:var(--bg);color:var(--txt);
+    min-height:100vh;line-height:1.6;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:56px 28px 80px}
+  header{margin-bottom:48px;text-align:center}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;
+    color:var(--dim);text-transform:uppercase;margin-bottom:12px}
+  h1{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .sub{color:var(--dim);margin-top:8px;font-weight:300;font-size:14px}
+  .badge-row{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
+    font-size:12px;font-family:var(--mono);font-weight:500}
+  .badge.r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-line)}
+  .badge.g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-line)}
+  .badge.y{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-line)}
+  .badge.b{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-line)}
+  .badge .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .badge.r .dot{background:var(--red)}
+  .badge.g .dot{background:var(--green)}
+  .badge.y .dot{background:var(--yellow)}
+  .badge.b .dot{background:var(--blue)}
+
+  .section{margin-top:40px}
+  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .section-head h2{font-size:15px;font-weight:600;letter-spacing:.04em}
+  .section-head .ln{flex:1;height:1px;background:var(--line)}
+  .section-head .cnt{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  
+  .section.r .section-head h2{color:var(--red)}
+  .section.g .section-head h2{color:var(--green)}
+  .section.y .section-head h2{color:var(--yellow)}
+  .section.b .section-head h2{color:var(--blue)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .card{
+    position:relative;text-decoration:none;color:inherit;
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:16px 18px 14px;
+    transition:all .2s ease;border-left:4px solid var(--line);
+  }
+  .section.r .card{border-left-color:var(--red)}
+  .section.g .card{border-left-color:var(--green)}
+  .section.y .card{border-left-color:var(--yellow)}
+  .section.b .card{border-left-color:var(--blue)}
+  
+  .section.r .card:hover{border-color:var(--red);box-shadow:0 4px 16px -4px rgba(220,38,38,.12)}
+  .section.g .card:hover{border-color:var(--green);box-shadow:0 4px 16px -4px rgba(22,163,74,.12)}
+  .section.y .card:hover{border-color:var(--yellow);box-shadow:0 4px 16px -4px rgba(202,138,4,.12)}
+  .section.b .card:hover{border-color:var(--blue);box-shadow:0 4px 16px -4px rgba(37,99,235,.12)}
+  
+  .card .ttl{font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+  .card .meta{display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .ver{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:999px;font-weight:500}
+  .section.r .ver{background:var(--red-bg);color:var(--red)}
+  .section.g .ver{background:var(--green-bg);color:var(--green)}
+  .section.y .ver{background:var(--yellow-bg);color:var(--yellow)}
+  .section.b .ver{background:var(--blue-bg);color:var(--blue)}
+  .card .when{color:var(--faint)}
+  .card .cat-tag{font-size:10px;color:var(--faint);margin-top:6px}
+
+  footer{margin-top:56px;font-family:var(--mono);font-size:11px;color:var(--faint);
+    border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between}
+  .note{margin-top:24px;padding:14px 18px;border-radius:10px;
+    background:var(--panel);border:1px dashed var(--line);font-size:13px;color:var(--dim);
+    line-height:1.8}
+  .note code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 6px;border-radius:4px}
 </style>
 </head>
 <body>
-<div class="msg">
-  <h1>⏰ 此页面已按计划下线</h1>
-  <p>临时展示页面已在 30 分钟后自动关闭。</p>
-  <p>Color-coded document page — auto takedown complete.</p>
+<div class="wrap">
+  <header>
+    <div class="kicker">// color-coded documents</div>
+    <h1>📑 手写标记 · 文档分类</h1>
+    <p class="sub">按红🟢绿🟡黄四色分类展示 DocFlow 中已标记的文档</p>
+    <div class="badge-row">
+      <span class="badge r"><span class="dot"></span> 红色标记</span>
+      <span class="badge g"><span class="dot"></span> 绿色标记</span>
+      <span class="badge y"><span class="dot"></span> 黄色标记</span>
+      <span class="badge b"><span class="dot"></span> 蓝色标记</span>
+    </div>
+  </header>
+
+  <!-- 🔴 RED -->
+  <section class="section r">
+    <div class="section-head">
+      <h2>🔴 红色标记 · 核心项目</h2><div class="ln"></div>
+      <span class="cnt">2</span>
+    </div>
+    <div class="grid">
+      <a class="card" href="http://62.234.162.198:8080/d/docflow">
+        <div class="ttl">DocFlow — 文档托管 + 版本归档系统</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/qiuyudi-portfolio-2026">
+        <div class="ttl">邱钰迪 · AI能力作品集（2026）</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 🟢 GREEN -->
+  <section class="section g">
+    <div class="section-head">
+      <h2>🟢 绿色标记 · 获客与调研</h2><div class="ln"></div>
+      <span class="cnt">3</span>
+    </div>
+    <div class="grid">
+      <a class="card" href="http://62.234.162.198:8080/d/medical-beauty-research">
+        <div class="ttl">医美获客模式调研</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition">
+        <div class="ttl">小红书获客Demo完整记录</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/xhs-recruitment-standard">
+        <div class="ttl">小红书筛选标准</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 🟡 YELLOW -->
+  <section class="section y">
+    <div class="section-head">
+      <h2>🟡 黄色标记 · 简历与机会分析</h2><div class="ln"></div>
+      <span class="cnt">3</span>
+    </div>
+    <div class="grid">
+      <a class="card" href="http://62.234.162.198:8080/d/resume-cn">
+        <div class="ttl">个人简历 · 中文版（邱钰迪）</div>
+        <div class="meta"><span class="ver">v5.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 个人简历</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/resume-en">
+        <div class="ttl">Resume · Asta Vance（EN）</div>
+        <div class="meta"><span class="ver">v3.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 个人简历</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/ai-opportunity-analysis">
+        <div class="ttl">AI应用高价值机会点分析</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 项目经历</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 🔵 BLUE -->
+  <section class="section b">
+    <div class="section-head">
+      <h2>🔵 蓝色标记 · 求职面试</h2><div class="ln"></div>
+      <span class="cnt">9</span>
+    </div>
+    <div class="grid">
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-company-intro">
+        <div class="ttl">德声实业公司简介</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-competitor-analysis">
+        <div class="ttl">德声面试 - 竞品分析Demo</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-interview">
+        <div class="ttl">德声实业面试信息汇总（完整版）</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-interview-transcript">
+        <div class="ttl">德声二面面试录音转写</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-possible-questions">
+        <div class="ttl">德声面试 - 可能被问的问题</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-ppt-interview">
+        <div class="ttl">德声实业面试PPT</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-qa-prep">
+        <div class="ttl">德声面试 - 提问清单</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-second-round">
+        <div class="ttl">AI赋能德声研发 - 二面方案</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+      <a class="card" href="http://62.234.162.198:8080/d/job-filtering">
+        <div class="ttl">岗位筛选记录 2026-04-12</div>
+        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
+        <div class="cat-tag">📁 求职面试</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="note">
+    📌 标记来源：手写标注截图（红 🔴 · 绿 🟢 · 黄 🟡 · 蓝 🔵）<br>
+    所有文档托管在 <a href="http://62.234.162.198:8080/docs" style="color:var(--green);text-decoration:underline">DocFlow</a> · 此页面 <strong>30 分钟后自动下线</strong>
+  </div>
+
+  <footer>
+    <span>Color-Coded Docs</span>
+    <span id="f-time"></span>
+  </footer>
 </div>
+<script>
+document.getElementById('f-time').textContent = new Date().toISOString().slice(0,16).replace('T',' ');
+</script>
 </body>
 </html>
