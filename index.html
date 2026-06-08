@@ -1,245 +1,193 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文档分类 · 颜色标记</title>
+<title>Color-Coded Documents · DocFlow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#f0f2f5; --panel:#ffffff; --line:#dce0e6;
     --txt:#1f2937; --dim:#6b7280; --faint:#9ca3af;
-    --mono:'JetBrains Mono',ui-monospace,monospace;
-    --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
-    --red:#dc2626; --red-bg:#fef2f2; --red-line:#fecaca;
-    --green:#16a34a; --green-bg:#f0fdf4; --green-line:#bbf7d0;
-    --yellow:#ca8a04; --yellow-bg:#fefce8; --yellow-line:#fde68a;
-    --blue:#2563eb; --blue-bg:#eff6ff; --blue-line:#bfdbfe;
+    --green:#16a34a; --green-light:#22c55e;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;
+    --sans:'Inter','system-ui',-apple-system,sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{
     font-family:var(--sans);background:var(--bg);color:var(--txt);
     min-height:100vh;line-height:1.6;
   }
-  .wrap{max-width:960px;margin:0 auto;padding:56px 28px 80px}
-  header{margin-bottom:48px;text-align:center}
+  .wrap{max-width:980px;margin:0 auto;padding:56px 28px 80px}
+  header{text-align:center;margin-bottom:48px}
   .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;
-    color:var(--dim);text-transform:uppercase;margin-bottom:12px}
+    color:var(--green);text-transform:uppercase;margin-bottom:12px}
   h1{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  h1 .hl{color:var(--green)}
   .sub{color:var(--dim);margin-top:8px;font-weight:300;font-size:14px}
   .badge-row{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
   .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
     font-size:12px;font-family:var(--mono);font-weight:500}
-  .badge.r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-line)}
-  .badge.g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-line)}
-  .badge.y{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-line)}
-  .badge.b{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-line)}
   .badge .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-  .badge.r .dot{background:var(--red)}
-  .badge.g .dot{background:var(--green)}
-  .badge.y .dot{background:var(--yellow)}
-  .badge.b .dot{background:var(--blue)}
 
   .section{margin-top:40px}
   .section-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
   .section-head h2{font-size:15px;font-weight:600;letter-spacing:.04em}
   .section-head .ln{flex:1;height:1px;background:var(--line)}
   .section-head .cnt{font-family:var(--mono);font-size:11px;color:var(--faint)}
-  
-  .section.r .section-head h2{color:var(--red)}
-  .section.g .section-head h2{color:var(--green)}
-  .section.y .section-head h2{color:var(--yellow)}
-  .section.b .section-head h2{color:var(--blue)}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
   .card{
-    position:relative;text-decoration:none;color:inherit;
+    position:relative;display:block;text-decoration:none;color:inherit;
     background:var(--panel);border:1px solid var(--line);
-    border-radius:10px;padding:16px 18px 14px;
+    border-radius:10px;padding:18px 20px 16px;
     transition:all .2s ease;border-left:4px solid var(--line);
   }
-  .section.r .card{border-left-color:var(--red)}
-  .section.g .card{border-left-color:var(--green)}
-  .section.y .card{border-left-color:var(--yellow)}
-  .section.b .card{border-left-color:var(--blue)}
-  
-  .section.r .card:hover{border-color:var(--red);box-shadow:0 4px 16px -4px rgba(220,38,38,.12)}
-  .section.g .card:hover{border-color:var(--green);box-shadow:0 4px 16px -4px rgba(22,163,74,.12)}
-  .section.y .card:hover{border-color:var(--yellow);box-shadow:0 4px 16px -4px rgba(202,138,4,.12)}
-  .section.b .card:hover{border-color:var(--blue);box-shadow:0 4px 16px -4px rgba(37,99,235,.12)}
-  
+  .card:hover{transform:translateY(-2px);box-shadow:0 6px 20px -6px rgba(22,163,74,.12)}
   .card .ttl{font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+  .card .desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:10px}
   .card .meta{display:flex;align-items:center;justify-content:space-between;
-    font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .ver{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:999px;font-weight:500}
-  .section.r .ver{background:var(--red-bg);color:var(--red)}
-  .section.g .ver{background:var(--green-bg);color:var(--green)}
-  .section.y .ver{background:var(--yellow-bg);color:var(--yellow)}
-  .section.b .ver{background:var(--blue-bg);color:var(--blue)}
-  .card .when{color:var(--faint)}
-  .card .cat-tag{font-size:10px;color:var(--faint);margin-top:6px}
+    font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .card .tag{font-size:10px;color:var(--faint);background:var(--bg);
+    padding:2px 8px;border-radius:999px}
 
   footer{margin-top:56px;font-family:var(--mono);font-size:11px;color:var(--faint);
     border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between}
   .note{margin-top:24px;padding:14px 18px;border-radius:10px;
-    background:var(--panel);border:1px dashed var(--line);font-size:13px;color:var(--dim);
-    line-height:1.8}
-  .note code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 6px;border-radius:4px}
+    background:var(--panel);border:1px dashed var(--line);font-size:13px;color:var(--dim);line-height:1.8}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">// color-coded documents</div>
-    <h1>📑 手写标记 · 文档分类</h1>
-    <p class="sub">按红🟢绿🟡黄四色分类展示 DocFlow 中已标记的文档</p>
+    <div class="kicker">// color-classified documents</div>
+    <h1><span class="hl">DocFlow</span> · Document Index</h1>
+    <p class="sub">Hand-marked documents organized by color — Core Projects, Acquisition Research, Industry News & Learning Materials</p>
     <div class="badge-row">
-      <span class="badge r"><span class="dot"></span> 红色标记</span>
-      <span class="badge g"><span class="dot"></span> 绿色标记</span>
-      <span class="badge y"><span class="dot"></span> 黄色标记</span>
-      <span class="badge b"><span class="dot"></span> 蓝色标记</span>
+      <span class="badge" style="background:#fef2f2;color:#dc2626;border-color:#fecaca"><span class="dot" style="background:#dc2626"></span> Core Projects</span>
+      <span class="badge" style="background:#f0fdf4;color:#16a34a;border-color:#bbf7d0"><span class="dot" style="background:#16a34a"></span> Acquisition Research</span>
+      <span class="badge" style="background:#fefce8;color:#ca8a04;border-color:#fde68a"><span class="dot" style="background:#ca8a04"></span> Industry News</span>
+      <span class="badge" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe"><span class="dot" style="background:#2563eb"></span> Learning Materials</span>
     </div>
   </header>
 
-  <!-- 🔴 RED -->
-  <section class="section r">
+  <!-- RED -->
+  <section class="section">
     <div class="section-head">
-      <h2>🔴 红色标记 · 核心项目</h2><div class="ln"></div>
-      <span class="cnt">2</span>
+      <h2 style="color:#dc2626">&#128308; Core Projects</h2><div class="ln"></div><span class="cnt">2</span>
     </div>
     <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/docflow">
-        <div class="ttl">DocFlow — 文档托管 + 版本归档系统</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/docflow" style="border-left-color:#dc2626">
+        <div class="ttl">DocFlow — Document Hosting & Version Archive</div>
+        <div class="desc">A minimal document hosting service with Markdown storage, version history, and Agent-friendly API. Built with FastAPI.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/qiuyudi-portfolio-2026">
-        <div class="ttl">邱钰迪 · AI能力作品集（2026）</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/qiuyudi-portfolio-2026" style="border-left-color:#dc2626">
+        <div class="ttl">Qiuyudi · AI Portfolio 2026</div>
+        <div class="desc">Comprehensive portfolio showcasing AI product management skills, project deliveries, and cross-industry commercialization experience.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
       </a>
     </div>
   </section>
 
-  <!-- 🟢 GREEN -->
-  <section class="section g">
+  <!-- GREEN -->
+  <section class="section">
     <div class="section-head">
-      <h2>🟢 绿色标记 · 获客与调研</h2><div class="ln"></div>
-      <span class="cnt">3</span>
+      <h2 style="color:#16a34a">&#127793; Acquisition & Research</h2><div class="ln"></div><span class="cnt">3</span>
     </div>
     <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/medical-beauty-research">
-        <div class="ttl">医美获客模式调研</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/medical-beauty-research" style="border-left-color:#16a34a">
+        <div class="ttl">Medical Aesthetics · Customer Acquisition Research</div>
+        <div class="desc">Market research on customer acquisition models in the medical aesthetics industry, analyzing cost structures and channel effectiveness.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition">
-        <div class="ttl">小红书获客Demo完整记录</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition" style="border-left-color:#16a34a">
+        <div class="ttl">Xiaohongshu Customer Acquisition Demo</div>
+        <div class="desc">End-to-end AI-powered customer acquisition MVP. Automated comment scraping + intent classification + targeted outreach.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/xhs-recruitment-standard">
-        <div class="ttl">小红书筛选标准</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/xhs-recruitment-standard" style="border-left-color:#16a34a">
+        <div class="ttl">Xiaohongshu Recruitment Screening Standards</div>
+        <div class="desc">Structured criteria for identifying and filtering quality candidates on Xiaohongshu, with bot detection rules.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
       </a>
     </div>
   </section>
 
-  <!-- 🟡 YELLOW -->
-  <section class="section y">
+  <!-- YELLOW - Industry News -->
+  <section class="section">
     <div class="section-head">
-      <h2>🟡 黄色标记 · 简历与机会分析</h2><div class="ln"></div>
-      <span class="cnt">3</span>
+      <h2 style="color:#ca8a04">&#128993; Industry News</h2><div class="ln"></div><span class="cnt">2</span>
     </div>
     <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/resume-cn">
-        <div class="ttl">个人简历 · 中文版（邱钰迪）</div>
-        <div class="meta"><span class="ver">v5.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 个人简历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/anthropic-rsi-2026" style="border-left-color:#ca8a04">
+        <div class="ttl">Anthropic Calls for AI Research Pause</div>
+        <div class="desc">Breaking: Anthropic urges the entire AI community to pause research, citing alignment and safety concerns.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Industry News</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/resume-en">
-        <div class="ttl">Resume · Asta Vance（EN）</div>
-        <div class="meta"><span class="ver">v3.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 个人简历</div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/ai-opportunity-analysis">
-        <div class="ttl">AI应用高价值机会点分析</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 项目经历</div>
+      <a class="card" href="http://62.234.162.198:8080/d/github-open-source" style="border-left-color:#ca8a04">
+        <div class="ttl">Weekly GitHub Open Source Picks</div>
+        <div class="desc">10 trending open-source projects you shouldn't miss this week — curated from GitHub's hottest repos.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Industry News</span></div>
       </a>
     </div>
   </section>
 
-  <!-- 🔵 BLUE -->
-  <section class="section b">
+  <!-- BLUE - Learning Materials -->
+  <section class="section">
     <div class="section-head">
-      <h2>🔵 蓝色标记 · 求职面试</h2><div class="ln"></div>
-      <span class="cnt">9</span>
+      <h2 style="color:#2563eb">&#128309; Learning Materials</h2><div class="ln"></div><span class="cnt">7</span>
     </div>
     <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-company-intro">
-        <div class="ttl">德声实业公司简介</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-index" style="border-left-color:#2563eb">
+        <div class="ttl">Agent Engineering Knowledge Base · Index</div>
+        <div class="desc">Curated bilingual notes from Anthropic Engineering blog — multi-agent orchestration, context engineering, and tool design.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-competitor-analysis">
-        <div class="ttl">德声面试 - 竞品分析Demo</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-orchestration" style="border-left-color:#2563eb">
+        <div class="ttl">Multi-Agent Orchestration & Scheduling</div>
+        <div class="desc">How Anthropic built their multi-agent research system — orchestrator-worker paradigms, task routing, and delegation patterns.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-interview">
-        <div class="ttl">德声实业面试信息汇总（完整版）</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-context" style="border-left-color:#2563eb">
+        <div class="ttl">Context Engineering & Memory Management</div>
+        <div class="desc">Effective context engineering for AI agents — attention budgets, memory hierarchies, and system prompt calibration.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-interview-transcript">
-        <div class="ttl">德声二面面试录音转写</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-tools" style="border-left-color:#2563eb">
+        <div class="ttl">Tool Design & Graceful Degradation</div>
+        <div class="desc">Writing effective tools for agents — tool contracts, error handling strategies, semantic IDs, and failure recovery.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-possible-questions">
-        <div class="ttl">德声面试 - 可能被问的问题</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/ai-short-video-tool-eval" style="border-left-color:#2563eb">
+        <div class="ttl">AI Short Video Tool Evaluation Report</div>
+        <div class="desc">Comprehensive evaluation of AI tools for short video production — comparing cost, quality, and workflow integration.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-ppt-interview">
-        <div class="ttl">德声实业面试PPT</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/ai-video-tutorial" style="border-left-color:#2563eb">
+        <div class="ttl">Why AI Videos Look Better — Seedance Tutorial</div>
+        <div class="desc">Cinematic techniques for AI-generated video — Seedance lens, camera motion, and storytelling fundamentals.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-qa-prep">
-        <div class="ttl">德声面试 - 提问清单</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/de-sheng-second-round">
-        <div class="ttl">AI赋能德声研发 - 二面方案</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/job-filtering">
-        <div class="ttl">岗位筛选记录 2026-04-12</div>
-        <div class="meta"><span class="ver">v1.0</span><span class="when">2026-06-08</span></div>
-        <div class="cat-tag">📁 求职面试</div>
+      <a class="card" href="http://62.234.162.198:8080/d/x-ai-video-tutorial" style="border-left-color:#2563eb">
+        <div class="ttl">How to Make Viral AI Short Videos</div>
+        <div class="desc">Step-by-step tutorial on creating trending AI short videos — from prompt engineering to final export.</div>
+        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
       </a>
     </div>
   </section>
 
   <div class="note">
-    📌 标记来源：手写标注截图（红 🔴 · 绿 🟢 · 黄 🟡 · 蓝 🔵）<br>
-    所有文档托管在 <a href="http://62.234.162.198:8080/docs" style="color:var(--green);text-decoration:underline">DocFlow</a> · 此页面 <strong>30 分钟后自动下线</strong>
+    &#128204; Color coding based on hand-written document marks. All documents hosted on <a href="http://62.234.162.198:8080/docs" style="color:var(--green);text-decoration:underline">DocFlow</a>.
   </div>
 
   <footer>
-    <span>Color-Coded Docs</span>
+    <span>Color-Coded Docs &middot; DocFlow</span>
     <span id="f-time"></span>
   </footer>
 </div>
-<script>
-document.getElementById('f-time').textContent = new Date().toISOString().slice(0,16).replace('T',' ');
-</script>
+<script>document.getElementById('f-time').textContent=new Date().toISOString().slice(0,16).replace('T',' ');</script>
 </body>
 </html>
