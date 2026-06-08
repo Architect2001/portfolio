@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>赫尔墨斯 · 表情包</title>
+<style>
+  :root{
+    --bg:#f0f2f5; --panel:#fff; --line:#dce0e6;
+    --txt:#1f2937; --dim:#6b7280; --green:#16a34a;
+    --sans:'Inter','system-ui',-apple-system,sans-serif;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);line-height:1.6}
+  .wrap{max-width:900px;margin:0 auto;padding:48px 24px 64px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:700;margin-bottom:6px}
+  .sub{color:var(--dim);font-size:14px;margin-bottom:32px}
+  .sec{margin-bottom:40px}
+  .sec-title{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;transition:all .2s}
+  .card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:0 4px 12px rgba(22,163,74,.1)}
+  .card img{max-width:80px;max-height:80px}
+  .card .label{font-size:11px;color:var(--dim);margin-top:8px;font-family:var(--mono)}
+  .card-wide{grid-column:span 2}
+  .card-wide img{max-width:160px}
+  footer{margin-top:48px;font-family:var(--mono);font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:16px;text-align:center}
+  a{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>赫尔墨斯 · 表情包 🌿</h1>
+  <p class="sub">Hermes Emoji Pack · by <a href="https://github.com/Architect2001">111</a></p>
+
+  <div class="sec">
+    <div class="sec-title">🧸 Chibi Basic · 基础表情 S1</div>
+    <div class="grid" id="grid-basic"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🎭 Chibi Action · 动态表情 S2</div>
+    <div class="grid" id="grid-action"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🤖 Coder Memes · 程序员梗图</div>
+    <div class="grid" id="grid-coder"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🖼️ Character Art · 角色设定</div>
+    <div class="grid" id="grid-character"></div>
+  </div>
+
+  <footer>🚀 Managed by Hermes</footer>
+</div>
+
+<script>
+const basic = ['开心','呆滞','生气','炸毛','疑惑','害羞','得意','撒娇','无奈'];
+const action = ['睡觉','看手机','慌张','思考','超开心','心动','哭哭','害羞脸红','调皮'];
+const coder = ['DEBUG OR DIE','ERROR弹窗淹没','TAP!!狂敲键盘','hermes!!瘫倒','哼','抱抱','被报错缠住','被需求淹没'];
+const chars = ['hermes_3view','hermes_chibi_1','hermes_chibi_casual','hermes_chibi_lace','hermes_profile_1'];
+
+function render(id, files, prefix, ext, wide){
+  const g = document.getElementById(id);
+  if(!g) return;
+  g.innerHTML = files.map(f => {
+    const label = f.replace(/\.\w+$/,'');
+    return `<div class="card${wide?' card-wide':''}"><img src="${prefix}${f}${ext||''}" alt="${label}" loading="lazy"><div class="label">${label}</div></div>`;
+  }).join('');
+}
+
+render('grid-basic', basic.map(n => n+'.png'), 'emojis/chibi-basic/');
+render('grid-action', action.map(n => n+'.png'), 'emojis/chibi-action/');
+render('grid-coder', coder, 'coder-memes/', '');
+render('grid-character', chars.map(n => n+'.jpg'), 'character/', '');
+</script>
+</body>
+</html>
