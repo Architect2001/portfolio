@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>资料展示 · Portfolio</title>
+<title>Yudi Qiu · AI Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
   :root{
     --bg:#f0f2f5; --panel:#ffffff; --line:#dce0e6;
     --txt:#1f2937; --dim:#6b7280; --faint:#9ca3af;
-    --green:#16a34a; --green-light:#22c55e;
+    --green:#16a34a; --green-light:#22c55e; --green-bg:#f0fdf4;
     --mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;
     --sans:'Inter','system-ui',-apple-system,sans-serif;
   }
@@ -21,170 +21,196 @@
     min-height:100vh;line-height:1.6;
   }
   .wrap{max-width:980px;margin:0 auto;padding:56px 28px 80px}
-  header{text-align:center;margin-bottom:48px}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;
-    color:var(--green);text-transform:uppercase;margin-bottom:12px}
-  h1{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.2}
-  h1 .hl{color:var(--green)}
-  .sub{color:var(--dim);margin-top:8px;font-weight:300;font-size:14px}
-  .badge-row{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
-  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
-    font-size:12px;font-family:var(--mono);font-weight:500}
-  .badge .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
 
-  .section{margin-top:40px}
-  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-  .section-head h2{font-size:15px;font-weight:600;letter-spacing:.04em}
-  .section-head .ln{flex:1;height:1px;background:var(--line)}
-  .section-head .cnt{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  /* Hero */
+  .hero{margin-bottom:56px}
+  .hero .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;
+    color:var(--green);text-transform:uppercase;margin-bottom:16px}
+  .hero h1{font-size:clamp(32px,5vw,52px);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
+  .hero .title-line{font-size:clamp(15px,2vw,20px);font-weight:500;color:var(--green);margin-bottom:18px}
+  .hero .tagline{font-size:14px;color:var(--dim);font-weight:300;line-height:1.7;max-width:620px;margin-bottom:24px}
+  .hero .badge-row{display:flex;gap:10px;flex-wrap:wrap}
+  .hero .badge{font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:999px;
+    background:var(--green-bg);color:var(--green);border:1px solid var(--green);font-weight:500}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-  .card{
-    position:relative;display:block;text-decoration:none;color:inherit;
-    background:var(--panel);border:1px solid var(--line);
-    border-radius:10px;padding:18px 20px 16px;
-    transition:all .2s ease;border-left:4px solid var(--line);
+  /* Section titles */
+  .section-title{
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:18px;padding-bottom:8px;border-bottom:1px solid var(--line)
   }
-  .card:hover{transform:translateY(-2px);box-shadow:0 6px 20px -6px rgba(22,163,74,.12)}
-  .card .ttl{font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
-  .card .desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:10px}
-  .card .meta{display:flex;align-items:center;justify-content:space-between;
+
+  /* Project cards - prominent */
+  .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;margin-bottom:56px}
+  .proj-card{
+    position:relative;display:block;text-decoration:none;color:inherit;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:24px 24px 20px;transition:all .25s ease;
+  }
+  .proj-card:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:0 10px 28px -10px rgba(22,163,74,.15)}
+  .proj-card .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 10px;border-radius:999px;
+    background:var(--green-bg);color:var(--green);border:1px solid var(--green);margin-bottom:14px;font-weight:500}
+  .proj-card h3{font-size:18px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+  .proj-card .desc{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:14px}
+  .proj-card .meta{display:flex;align-items:center;gap:16px;
     font-family:var(--mono);font-size:11px;color:var(--faint)}
-  .card .tag{font-size:10px;color:var(--faint);background:var(--bg);
-    padding:2px 8px;border-radius:999px}
+  .proj-card .meta .dot{width:4px;height:4px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+  .proj-card .meta .hl{color:var(--green);font-weight:500}
+
+  /* Knowledge base grid */
+  .kb-section{margin-top:40px}
+  .kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .kb-card{
+    position:relative;display:block;text-decoration:none;color:inherit;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px 14px;transition:all .2s ease;
+    border-left:4px solid transparent;
+  }
+  .kb-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px -4px rgba(22,163,74,.08)}
+  .kb-card .ttl{font-size:14px;font-weight:600;margin-bottom:6px;letter-spacing:-.01em}
+  .kb-card .desc{font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:8px}
+  .kb-card .meta{font-family:var(--mono);font-size:10px;color:var(--faint);display:flex;justify-content:space-between}
+
+  .kb-cat{margin-bottom:28px}
+  .kb-cat-head{font-size:12px;font-weight:600;letter-spacing:.05em;margin-bottom:12px;color:var(--dim)}
 
   footer{margin-top:56px;font-family:var(--mono);font-size:11px;color:var(--faint);
     border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between}
-  .note{margin-top:24px;padding:14px 18px;border-radius:10px;
-    background:var(--panel);border:1px dashed var(--line);font-size:13px;color:var(--dim);line-height:1.8}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="kicker">// personal portfolio</div>
-    <h1><span class="hl">资料</span> · 展示</h1>
-    <p class="sub">按颜色分类展示个人项目、行业资讯与学习资料</p>
+
+  <div class="hero">
+    <div class="kicker">// portfolio</div>
+    <h1>Yudi Qiu</h1>
+    <div class="title-line">AI Automation Specialist · Workflow Engineer · Agent Systems Builder</div>
+    <div class="tagline">
+      I build AI agents, workflow automation systems,<br>
+      and self-maintaining documentation pipelines.
+    </div>
     <div class="badge-row">
-      <span class="badge" style="background:#fef2f2;color:#dc2626;border-color:#fecaca"><span class="dot" style="background:#dc2626"></span> 核心项目</span>
-      <span class="badge" style="background:#f0fdf4;color:#16a34a;border-color:#bbf7d0"><span class="dot" style="background:#16a34a"></span> 获客研究</span>
-      <span class="badge" style="background:#fefce8;color:#ca8a04;border-color:#fde68a"><span class="dot" style="background:#ca8a04"></span> 行业资讯</span>
-      <span class="badge" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe"><span class="dot" style="background:#2563eb"></span> 学习资料</span>
+      <span class="badge">AI Agents</span>
+      <span class="badge">Workflow Automation</span>
+      <span class="badge">Agent Systems</span>
+      <span class="badge">DocFlow</span>
     </div>
-  </header>
+  </div>
 
-  <!-- RED -->
-  <section class="section">
-    <div class="section-head">
-      <h2 style="color:#dc2626">&#128308; Core Projects</h2><div class="ln"></div><span class="cnt">2</span>
-    </div>
-    <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/docflow" style="border-left-color:#dc2626">
-        <div class="ttl">DocFlow — Document Hosting & Version Archive</div>
-        <div class="desc">A minimal document hosting service with Markdown storage, version history, and Agent-friendly API. Built with FastAPI.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/qiuyudi-portfolio-2026" style="border-left-color:#dc2626">
-        <div class="ttl">Qiuyudi · AI Portfolio 2026</div>
-        <div class="desc">Comprehensive portfolio showcasing AI product management skills, project deliveries, and cross-industry commercialization experience.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
-      </a>
-    </div>
-  </section>
+  <div class="section-title">Projects</div>
+  <div class="proj-grid">
 
-  <!-- GREEN -->
-  <section class="section">
-    <div class="section-head">
-      <h2 style="color:#16a34a">&#127793; Acquisition & Research</h2><div class="ln"></div><span class="cnt">3</span>
-    </div>
-    <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/medical-beauty-research" style="border-left-color:#16a34a">
-        <div class="ttl">Medical Aesthetics · Customer Acquisition Research</div>
-        <div class="desc">Market research on customer acquisition models in the medical aesthetics industry, analyzing cost structures and channel effectiveness.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition" style="border-left-color:#16a34a">
-        <div class="ttl">Xiaohongshu Customer Acquisition Demo</div>
-        <div class="desc">End-to-end AI-powered customer acquisition MVP. Automated comment scraping + intent classification + targeted outreach.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
-      </a>
-      <a class="card" href="http://62.234.162.198:8080/d/xhs-recruitment-standard" style="border-left-color:#16a34a">
-        <div class="ttl">Xiaohongshu Recruitment Screening Standards</div>
-        <div class="desc">Structured criteria for identifying and filtering quality candidates on Xiaohongshu, with bot detection rules.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Project Exp.</span></div>
-      </a>
-    </div>
-  </section>
+    <a class="proj-card" href="http://62.234.162.198:8080/d/qiuyudi-portfolio-2026">
+      <span class="tag">Manufacturing · AI</span>
+      <h3>AI Production Data Platform</h3>
+      <div class="desc">
+        Three-layer AI analytics platform integrating ERP &amp; MES data. Custom prompt engine for automatic labor cost calculation and process efficiency analysis. Achieved real-time cost visibility, identified hidden wastes, <strong>¥120K annual savings</strong>, pass rate 60% &rarr; 80%.
+      </div>
+      <div class="meta">
+        <span><span class="dot"></span> Sole Product Lead</span>
+        <span>2024.12 &ndash; 2026.02</span>
+      </div>
+    </a>
 
-  <!-- YELLOW - Industry News -->
-  <section class="section">
-    <div class="section-head">
-      <h2 style="color:#ca8a04">&#128993; Industry News</h2><div class="ln"></div><span class="cnt">2</span>
-    </div>
-    <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/anthropic-rsi-2026" style="border-left-color:#ca8a04">
+    <a class="proj-card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition">
+      <span class="tag">Marketing · AI</span>
+      <h3>AI Lead Generation Workflow</h3>
+      <div class="desc">
+        End-to-end AI customer acquisition system for Xiaohongshu. Automated comment scraping &rarr; cross-post activity analysis &rarr; L1-L3 intent classification &rarr; bot filtering. Identifies 5-7 high-intent leads per round, <strong>CAC reduced by 90%</strong> vs. traditional ads.
+      </div>
+      <div class="meta">
+        <span><span class="dot"></span> Product Designer</span>
+        <span>2026.04</span>
+      </div>
+    </a>
+
+    <a class="proj-card" href="http://62.234.162.198:8080/d/docflow">
+      <span class="tag">Infrastructure · AI</span>
+      <h3>DocFlow — Document Pipeline</h3>
+      <div class="desc">
+        Self-maintaining documentation system with Agent-driven upload, version archiving, and automatic knowledge base management. Powers this portfolio. Built with FastAPI + Markdown, zero database, designed for AI Agent write access.
+      </div>
+      <div class="meta">
+        <span><span class="dot"></span> Sole Creator</span>
+        <span>2026</span>
+      </div>
+    </a>
+
+    <a class="proj-card" href="http://62.234.162.198:8080/d/xhs-customer-acquisition">
+      <span class="tag">Manufacturing · AI</span>
+      <h3>AI Drawing Review System</h3>
+      <div class="desc">
+        Automated engineering drawing compliance checker using JavaScript scripts + multimodal LLM. Bypassed legacy ERP pop-up restrictions. <strong>30s &rarr; 5s</strong> per drawing, batch auto-processing, eliminated scrap losses from defective drawings.
+      </div>
+      <div class="meta">
+        <span><span class="dot"></span> Sole Product Lead</span>
+        <span>2026.03 &ndash; 2026.04</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-title">Knowledge Base</div>
+
+  <div class="kb-cat">
+    <div class="kb-cat-head" style="border-left:3px solid #ca8a04;padding-left:10px">Industry News</div>
+    <div class="kb-grid">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/anthropic-rsi-2026" style="border-left-color:#ca8a04">
         <div class="ttl">Anthropic Calls for AI Research Pause</div>
         <div class="desc">Breaking: Anthropic urges the entire AI community to pause research, citing alignment and safety concerns.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Industry News</span></div>
+        <div class="meta"><span>v1.0</span><span>Industry News</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/github-open-source" style="border-left-color:#ca8a04">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/github-open-source" style="border-left-color:#ca8a04">
         <div class="ttl">Weekly GitHub Open Source Picks</div>
         <div class="desc">10 trending open-source projects you shouldn't miss this week — curated from GitHub's hottest repos.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Industry News</span></div>
+        <div class="meta"><span>v1.0</span><span>Industry News</span></div>
       </a>
     </div>
-  </section>
+  </div>
 
-  <!-- BLUE - Learning Materials -->
-  <section class="section">
-    <div class="section-head">
-      <h2 style="color:#2563eb">&#128309; Learning Materials</h2><div class="ln"></div><span class="cnt">7</span>
-    </div>
-    <div class="grid">
-      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-index" style="border-left-color:#2563eb">
+  <div class="kb-cat">
+    <div class="kb-cat-head" style="border-left:3px solid #2563eb;padding-left:10px">Learning Materials</div>
+    <div class="kb-grid">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/agent-engineering-index" style="border-left-color:#2563eb">
         <div class="ttl">Agent Engineering Knowledge Base · Index</div>
         <div class="desc">Curated bilingual notes from Anthropic Engineering blog — multi-agent orchestration, context engineering, and tool design.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-orchestration" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/agent-engineering-orchestration" style="border-left-color:#2563eb">
         <div class="ttl">Multi-Agent Orchestration & Scheduling</div>
         <div class="desc">How Anthropic built their multi-agent research system — orchestrator-worker paradigms, task routing, and delegation patterns.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-context" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/agent-engineering-context" style="border-left-color:#2563eb">
         <div class="ttl">Context Engineering & Memory Management</div>
         <div class="desc">Effective context engineering for AI agents — attention budgets, memory hierarchies, and system prompt calibration.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/agent-engineering-tools" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/agent-engineering-tools" style="border-left-color:#2563eb">
         <div class="ttl">Tool Design & Graceful Degradation</div>
         <div class="desc">Writing effective tools for agents — tool contracts, error handling strategies, semantic IDs, and failure recovery.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/ai-short-video-tool-eval" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/ai-short-video-tool-eval" style="border-left-color:#2563eb">
         <div class="ttl">AI Short Video Tool Evaluation Report</div>
         <div class="desc">Comprehensive evaluation of AI tools for short video production — comparing cost, quality, and workflow integration.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/ai-video-tutorial" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/ai-video-tutorial" style="border-left-color:#2563eb">
         <div class="ttl">Why AI Videos Look Better — Seedance Tutorial</div>
         <div class="desc">Cinematic techniques for AI-generated video — Seedance lens, camera motion, and storytelling fundamentals.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
-      <a class="card" href="http://62.234.162.198:8080/d/x-ai-video-tutorial" style="border-left-color:#2563eb">
+      <a class="kb-card" href="http://62.234.162.198:8080/d/x-ai-video-tutorial" style="border-left-color:#2563eb">
         <div class="ttl">How to Make Viral AI Short Videos</div>
         <div class="desc">Step-by-step tutorial on creating trending AI short videos — from prompt engineering to final export.</div>
-        <div class="meta"><span>v1.0</span><span class="tag">Learning</span></div>
+        <div class="meta"><span>v1.0</span><span>Learning</span></div>
       </a>
     </div>
-  </section>
-
-  <div class="note">
-    &#128204; 全部资料托管在 <a href="http://62.234.162.198:8080/docs" style="color:var(--green);text-decoration:underline">DocFlow</a> · <a href="https://architect2001.github.io/color-docs/" style="color:var(--dim)">English</a>
   </div>
 
   <footer>
-    <span>展示资料 · 邱钰迪</span>
+    <span>Yudi Qiu · AI Portfolio</span>
     <span id="f-time"></span>
   </footer>
 </div>
