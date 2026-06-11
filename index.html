@@ -206,7 +206,7 @@
       <span class="tag i18n" data-en="AI Storyboard" data-zh="AI 故事板">AI 故事板</span>
       <h3 class="i18n" data-en="Wall Repair Tutorial" data-zh="墙面修补教程">墙面修补教程</h3>
       <div class="desc i18n" data-en="AI-generated step-by-step wall repair tutorial — visual storytelling for home improvement content." data-zh="AI 生成墙面修补分步教程 — 家装内容视觉叙事。">AI 生成墙面修补分步教程 — 家装内容视觉叙事。</div>
-      <img src="works/us-tiktok/wall-repair-tutorial.jpg" style="width:100%;border-radius:8px;margin-top:8px" alt="Wall Repair Tutorial">
+      <img src="works/us-tiktok/wall-repair-tutorial.jpg" class="gallery-trigger" style="width:100%;border-radius:8px;margin-top:8px" alt="Wall Repair Tutorial" onclick="openGallery(0, tiktokImages, tiktokTitles)">
       <div class="meta" style="margin-top:10px">
         <span>creatok.ai · AIGC</span>
         <span>2026</span>
@@ -216,7 +216,7 @@
       <span class="tag i18n" data-en="AI Storyboard" data-zh="AI 故事板">AI 故事板</span>
       <h3 class="i18n" data-en="Garage Mishap" data-zh="车库意外">车库意外</h3>
       <div class="desc i18n" data-en="AI-generated short film storyboard — a humorous garage scene with steam cleaning sequence." data-zh="AI 生成短片故事板 — 蒸汽清洗的搞笑车库场景。">AI 生成短片故事板 — 蒸汽清洗的搞笑车库场景。</div>
-      <img src="works/us-tiktok/garage-handprint.jpg" style="width:100%;border-radius:8px;margin-top:8px" alt="Garage Handprint">
+      <img src="works/us-tiktok/garage-handprint.jpg" class="gallery-trigger" style="width:100%;border-radius:8px;margin-top:8px" alt="Garage Handprint" onclick="openGallery(1, tiktokImages, tiktokTitles)">
       <div class="meta" style="margin-top:10px">
         <span>creatok.ai · AIGC</span>
         <span>2026</span>
@@ -370,5 +370,81 @@ function setLang(l) {
   document.documentElement.lang = l;
 }
 </script>
+
+<!-- Gallery Viewer -->
+<style>
+.gallery-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.92);z-index:9999;justify-content:center;align-items:center;flex-direction:column}
+.gallery-overlay.active{display:flex}
+.gallery-overlay img{max-width:92vw;max-height:82vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.gallery-nav{position:absolute;bottom:30px;display:flex;gap:16px;align-items:center}
+.gallery-nav button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:44px;height:44px;color:#fff;font-size:20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.gallery-nav button:hover{background:rgba(255,255,255,.3);transform:scale(1.05)}
+.gallery-nav .counter{color:rgba(255,255,255,.6);font-family:"JetBrains Mono",monospace;font-size:13px;min-width:60px;text-align:center}
+.gallery-close{position:absolute;top:20px;right:28px;background:none;border:none;color:rgba(255,255,255,.6);font-size:28px;cursor:pointer;transition:color .2s}
+.gallery-close:hover{color:#fff}
+.gallery-trigger{cursor:pointer;transition:transform .2s,box-shadow .2s}
+.gallery-trigger:hover{transform:scale(1.02);box-shadow:0 8px 28px rgba(0,0,0,.15)}
+</style>
+
+<div class="gallery-overlay" id="galleryOverlay">
+  <button class="gallery-close" onclick="closeGallery()">✕</button>
+  <img id="galleryImg" src="" alt="gallery">
+  <div class="gallery-nav">
+    <button onclick="prevImg()">‹</button>
+    <span class="counter" id="galleryCounter">1 / 1</span>
+    <button onclick="nextImg()">›</button>
+  </div>
+</div>
+
+<script>
+// US TikTok gallery
+const tiktokImages = [
+  "works/us-tiktok/wall-repair-tutorial.jpg",
+  "works/us-tiktok/garage-handprint.jpg"
+];
+const tiktokTitles = ["墙面修补教程", "车库意外"];
+let currentGallery = [];
+let currentTitles = [];
+let currentIdx = 0;
+
+function openGallery(idx, images, titles) {
+  currentGallery = images;
+  currentTitles = titles;
+  currentIdx = idx;
+  updateGallery();
+  document.getElementById('galleryOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeGallery() {
+  document.getElementById('galleryOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function updateGallery() {
+  const img = document.getElementById('galleryImg');
+  img.src = currentGallery[currentIdx];
+  img.alt = currentTitles[currentIdx];
+  document.getElementById('galleryCounter').textContent = 
+    (currentIdx + 1) + ' / ' + currentGallery.length;
+}
+
+function nextImg() {
+  if (currentIdx < currentGallery.length - 1) { currentIdx++; updateGallery(); }
+}
+
+function prevImg() {
+  if (currentIdx > 0) { currentIdx--; updateGallery(); }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('galleryOverlay').classList.contains('active')) return;
+  if (e.key === 'Escape') closeGallery();
+  if (e.key === 'ArrowRight') nextImg();
+  if (e.key === 'ArrowLeft') prevImg();
+});
+</script>
+
 </body>
 </html>
