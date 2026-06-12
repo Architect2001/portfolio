@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hermes Dashboard</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1a1d27;
+      --bg-card-hover: #202332;
+      --border: #2a2d3a;
+      --text: #e4e6ef;
+      --text-muted: #888ba0;
+      --accent: #6366f1;
+      --accent-glow: rgba(99,102,241,0.15);
+      --green: #22c55e;
+      --green-bg: rgba(34,197,94,0.1);
+      --yellow: #eab308;
+      --yellow-bg: rgba(234,179,8,0.1);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59,130,246,0.1);
+      --red: #ef4444;
+      --red-bg: rgba(239,68,68,0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    html { font-size: 14px; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ===== Layout ===== */
+    .container { max-width: 1280px; margin: 0 auto; }
+
+    /* ===== Header ===== */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: #fff;
+      font-family: var(--font); flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 22px; font-weight: 600; letter-spacing: -0.3px;
+    }
+    .header-title span { color: var(--text-muted); font-weight: 400; }
+    .header-meta {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px; font-size: 12px;
+      font-weight: 500; background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+    }
+    .badge-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .badge-dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+
+    /* ===== Sync Bar ===== */
+    .sync-bar {
+      display: flex; gap: 10px; margin-bottom: 28px; align-items: center;
+    }
+    .sync-input {
+      flex: 1; padding: 10px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text); font-size: 13px; font-family: var(--font);
+      outline: none; transition: border 0.2s;
+    }
+    .sync-input:focus { border-color: var(--accent); }
+    .sync-input::placeholder { color: var(--text-muted); }
+    .sync-btn {
+      padding: 10px 20px; border-radius: var(--radius-sm); border: none;
+      background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .sync-btn:hover { background: #5558e6; }
+    .sync-btn:active { transform: scale(0.97); }
+    .sync-status {
+      font-size: 12px; color: var(--text-muted); margin-left: 4px;
+    }
+    .sync-status.loading { color: var(--yellow); }
+    .sync-status.ok { color: var(--green); }
+    .sync-status.error { color: var(--red); }
+
+    /* ===== Grid ===== */
+    .grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ===== Cards ===== */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; transition: all 0.2s;
+    }
+    .card:hover { border-color: rgba(99,102,241,0.3); }
+    .card.full { grid-column: 1 / -1; }
+    .card.half { grid-column: span 2; }
+    .card-title {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 14px;
+    }
+
+    /* ===== Task Card ===== */
+    .task-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .task-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+    .progress-bar {
+      height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 3px; transition: width 0.6s ease;
+      background: linear-gradient(90deg, var(--accent), #a855f7);
+    }
+    .progress-label {
+      display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);
+    }
+    .task-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    }
+
+    /* ===== Memory Card ===== */
+    .memory-bar {
+      height: 10px; background: var(--border); border-radius: 5px; overflow: hidden;
+      margin: 10px 0 8px;
+    }
+    .memory-fill {
+      height: 100%; border-radius: 5px;
+      background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 60%, var(--red) 100%);
+      transition: width 0.6s ease;
+    }
+    .memory-stats {
+      display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .memory-stat {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .memory-stat-value { font-size: 20px; font-weight: 700; }
+    .memory-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .memory-recent { margin-top: 12px; }
+    .memory-recent-item {
+      font-size: 12px; color: var(--text-muted); padding: 4px 0;
+      border-bottom: 1px solid var(--border); font-family: var(--font);
+    }
+    .memory-recent-item:last-child { border-bottom: none; }
+
+    /* ===== Skills List ===== */
+    .skills-list { display: flex; flex-direction: column; gap: 6px; }
+    .skill-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-sm);
+    }
+    .skill-cat {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px; min-width: 56px; text-align: center;
+    }
+    .skill-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .skill-desc { font-size: 11px; color: var(--text-muted); }
+
+    /* ===== Decisions ===== */
+    .decisions-list { display: flex; flex-direction: column; gap: 12px; }
+    .decision-item {
+      padding: 10px 12px; background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+    }
+    .decision-what { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+    .decision-why { font-size: 12px; color: var(--text-muted); }
+    .decision-when { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* ===== Stats Grid ===== */
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat-box {
+      text-align: center; padding: 14px; background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm);
+    }
+    .stat-box-value { font-size: 24px; font-weight: 700; }
+    .stat-box-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== Agent Info ===== */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-muted); font-size: 12px; }
+    .info-value { font-size: 12px; font-weight: 500; font-family: var(--font); }
+
+    /* ===== Status badge colors ===== */
+    .status-进行中 { background: var(--yellow-bg); color: var(--yellow); }
+    .status-已完成 { background: var(--green-bg); color: var(--green); }
+    .status-待开始 { background: var(--blue-bg); color: var(--blue); }
+    .status-暂停 { background: var(--red-bg); color: var(--red); }
+
+    .cat-用户模型 { background: rgba(99,102,241,0.12); color: var(--accent); }
+    .cat-工作配置 { background: rgba(59,130,246,0.12); color: var(--blue); }
+    .cat-操作指令 { background: rgba(34,197,94,0.12); color: var(--green); }
+    .cat-校正 { background: rgba(239,68,68,0.12); color: var(--red); }
+
+    /* ===== Loading spinner ===== */
+    .spinner {
+      display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Responsive tweaks ===== */
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .header-title { font-size: 18px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + Babel for TSX -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-type="module">
+    const { useState, useEffect, useCallback } = React;
+
+    /* ===== Mock Data ===== */
+    const MOCK_STATUS = {
+      version: "1.0",
+      updated: new Date().toISOString(),
+      agent: {
+        name: "Hermes",
+        model: "deepseek-v4-flash",
+        provider: "custom (OpenRouter relay)",
+        uptime_hours: 72,
+        platform: "VPS · Feishu DM",
+      },
+      current_task: {
+        name: "记忆系统改造",
+        status: "进行中",
+        progress: 70,
+        started_at: "2026-06-09T22:15:00+08:00",
+        description: "按新规范重构 Hermes 记忆架构 —— Prefill 瘦身已完成，Memory 桶迁移已完成，Obsidian 知识库结构已建。",
+      },
+      memory: {
+        used: 383,
+        capacity: 2200,
+        entries: 3,
+        recent: [
+          "当前任务：记忆系统改造，优先级1完成（prefill瘦身+skills建立），优先级2进行中（memory清空完成）。待做：Obsidian知识库目录结构。",
+          "最近决策：采用六层记忆架构重构Hermes，将所有技术和用户配置迁出memory到skills。",
+          "待跟进：建立Obsidian知识库目录结构，同步用户模型文件到00_SELF/目录。",
+        ],
+      },
+      skills_loaded: [
+        { name: "hermes-work-config",     category: "工作配置", description: "工具/API/连接/工作流规范" },
+        { name: "thinking-style",         category: "用户模型", description: "信息处理/学习/推翻判断条件" },
+        { name: "decision-style",         category: "用户模型", description: "决策SOP/终止/放弃条件" },
+        { name: "behavior-patterns",      category: "用户模型", description: "合作/冲突/关系原则" },
+        { name: "hermes-calibration",     category: "校正",     description: "已知盲区/校正职责（不可覆盖）" },
+        { name: "docflow-upload",         category: "操作指令", description: "DocFlow 文档推送流程" },
+        { name: "github-pr-workflow",     category: "操作指令", description: "GitHub PR 生命周期" },
+        { name: "systematic-debugging",   category: "操作指令", description: "Bug 调试系统方法" },
+        { name: "test-driven-development",category: "操作指令", description: "TDD 工作流程" },
+      ],
+      recent_decisions: [
+        { what: "记忆架构六层重构", why: "解决 Prefill 混装、Memory 容量不足、新对话人格漂移", when: "2026-06-09 22:15" },
+        { what: "双写规则（Obsidian + DocFlow）", why: "所有过手文档标准化归档", when: "2026-06-09 22:00" },
+        { what: "替换 AI 产品经理简历外显名称", why: "与 AI 系统架构师简历分开管理", when: "2026-06-09 22:10" },
+        { what: "关闭自动同步（临时）", why: "GitHub token 安全问题 + 用户情绪", when: "2026-06-09 ~21:00" },
+      ],
+      session: {
+        total_sessions: 47,
+        current_topic: "Hermes 记忆系统改造",
+        last_active: new Date().toLocaleString("zh-CN"),
+      },
+      document_stats: {
+        obsidian_docs: 6,
+        docflow_docs: 35,
+      },
+    };
+
+    /* ===== Helpers ===== */
+    const statusClass = (s) => `status-${s}`;
+    const catClass = (c) => `cat-${c}`;
+    const fmtDate = (iso) => {
+      try { return new Date(iso).toLocaleString("zh-CN"); } catch { return iso; }
+    };
+
+    /* ===== Components ===== */
+
+    function ProgressBar({ value, label }) {
+      return (
+        <div>
+          <div className="progress-bar"><div className="progress-fill" style={{ width: value + '%' }} /></div>
+          {label && (
+            <div className="progress-label">
+              <span>{label}</span>
+              <span>{value}%</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function StatusBadge({ status }) {
+      return <span className={`task-status ${statusClass(status)}`}>● {status}</span>;
+    }
+
+    function CategoryBadge({ cat }) {
+      return <span className={`skill-cat ${catClass(cat)}`}>{cat}</span>;
+    }
+
+    function Card({ title, className = "", children }) {
+      return (
+        <div className={`card ${className}`}>
+          {title && <div className="card-title">{title}</div>}
+          {children}
+        </div>
+      );
+    }
+
+    function Header({ status }) {
+      const a = status.agent;
+      return (
+        <div className="header">
+          <div className="header-left">
+            <div className="logo">H</div>
+            <div>
+              <div className="header-title">Hermes <span>Dashboard</span></div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                {a.model} · {a.provider}
+              </div>
+            </div>
+          </div>
+          <div className="header-meta">
+            <span className="badge"><span className="badge-dot green" /> 运行中</span>
+            <span className="badge">⏱ {a.uptime_hours}h 在线</span>
+            <span className="badge">📡 {a.platform}</span>
+            <span className="badge" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              更新于 {fmtDate(status.updated)}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    function SyncBar({ onSync, syncStatus, url, setUrl }) {
+      const statusText = {
+        idle: '',
+        loading: '同步中…',
+        ok: '✓ 同步成功',
+        error: '✗ 同步失败',
+      };
+      return (
+        <div className="sync-bar">
+          <input
+            className="sync-input"
+            type="text"
+            placeholder="https://raw.githubusercontent.com/Architect2001/obsidian-vault/main/hermes-status.json"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+          />
+          <button className="sync-btn" onClick={onSync} disabled={syncStatus === 'loading' || !url.trim()}>
+            {syncStatus === 'loading' ? <><span className="spinner" /> 同步</> : '↻ 同步'}
+          </button>
+          {syncStatus && syncStatus !== 'idle' && (
+            <span className={`sync-status ${syncStatus}`}>{statusText[syncStatus]}</span>
+          )}
+        </div>
+      );
+    }
+
+    function TaskCard({ task }) {
+      return (
+        <Card title="当前任务" className="half">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div className="task-name">{task.name}</div>
+            <StatusBadge status={task.status} />
+          </div>
+          <div className="task-desc">{task.description}</div>
+          <ProgressBar value={task.progress} label="完成度" />
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+            开始于 {fmtDate(task.started_at)}
+          </div>
+        </Card>
+      );
+    }
+
+    function MemoryCard({ memory }) {
+      const pct = Math.round((memory.used / memory.capacity) * 100);
+      return (
+        <Card title="Memory 桶">
+          <div className="memory-bar"><div className="memory-fill" style={{ width: pct + '%' }} /></div>
+          <div className="memory-stats">
+            <div className="memory-stat">
+              <div className="memory-stat-value">{memory.used}</div>
+              <div className="memory-stat-label">已用 / {memory.capacity}</div>
+            </div>
+            <div className="memory-stat">
+              <div className="memory-stat-value">{memory.entries}</div>
+              <div className="memory-stat-label">条目数</div>
+            </div>
+            <div className="memory-stat">
+              <div className="memory-stat-value">{pct}%</div>
+              <div className="memory-stat-label">占用率</div>
+            </div>
+          </div>
+          <div className="memory-recent">
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              最近条目
+            </div>
+            {memory.recent.slice(0, 3).map((item, i) => (
+              <div key={i} className="memory-recent-item">› {item}</div>
+            ))}
+          </div>
+        </Card>
+      );
+    }
+
+    function SkillsCard({ skills }) {
+      return (
+        <Card title="已加载 Skill" className="half">
+          <div className="skills-list">
+            {skills.map((s, i) => (
+              <div key={i} className="skill-item">
+                <CategoryBadge cat={s.category} />
+                <div>
+                  <div className="skill-name">{s.name}</div>
+                  <div className="skill-desc">{s.description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+    }
+
+    function DecisionsCard({ decisions }) {
+      return (
+        <Card title="最近决策">
+          <div className="decisions-list">
+            {decisions.map((d, i) => (
+              <div key={i} className="decision-item">
+                <div className="decision-what">{d.what}</div>
+                <div className="decision-why">{d.why}</div>
+                <div className="decision-when">{d.when}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+    }
+
+    function StatsCard({ session, docStats }) {
+      return (
+        <Card title="概况统计">
+          <div className="stats-grid">
+            <div className="stat-box">
+              <div className="stat-box-value">{session.total_sessions}</div>
+              <div className="stat-box-label">总会话数</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-box-value">{docStats.obsidian_docs}</div>
+              <div className="stat-box-label">Obsidian 文档</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-box-value">{docStats.docflow_docs}</div>
+              <div className="stat-box-label">DocFlow 文档</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-box-value" style={{ fontSize: 16, fontWeight: 500 }}>
+                {session.current_topic.length > 12 ? session.current_topic.slice(0, 12) + '…' : session.current_topic}
+              </div>
+              <div className="stat-box-label">当前主题</div>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
+    function AgentInfoCard({ agent }) {
+      return (
+        <Card title="Agent 信息">
+          <div className="info-grid">
+            <div className="info-row"><span className="info-label">名称</span><span className="info-value">{agent.name}</span></div>
+            <div className="info-row"><span className="info-label">模型</span><span className="info-value">{agent.model}</span></div>
+            <div className="info-row"><span className="info-label">提供商</span><span className="info-value">{agent.provider}</span></div>
+            <div className="info-row"><span className="info-label">运行时间</span><span className="info-value">{agent.uptime_hours}h</span></div>
+            <div className="info-row"><span className="info-label">平台</span><span className="info-value">{agent.platform}</span></div>
+            <div className="info-row"><span className="info-label">版本</span><span className="info-value">v{MOCK_STATUS.version}</span></div>
+          </div>
+        </Card>
+      );
+    }
+
+    /* ===== JSON 格式预览 ===== */
+    function DataPreview({ data }) {
+      const [show, setShow] = useState(false);
+      return (
+        <Card title="数据源 (hermes-status.json)" className="full">
+          <div style={{ marginBottom: 8 }}>
+            <button
+              onClick={() => setShow(!show)}
+              style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                color: 'var(--text)', padding: '4px 12px', borderRadius: 6,
+                cursor: 'pointer', fontSize: 12,
+              }}
+            >
+              {show ? '▼ 收起' : '▶ 展开 JSON'}
+            </button>
+          </div>
+          {show && (
+            <pre style={{
+              fontFamily: 'var(--font)', fontSize: 11, lineHeight: 1.6,
+              color: 'var(--text-muted)', overflow: 'auto', maxHeight: 400,
+              padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 8,
+            }}>
+{JSON.stringify(data, null, 2)}
+            </pre>
+          )}
+        </Card>
+      );
+    }
+
+    /* ===== Main App ===== */
+    function App() {
+      const [status, setStatus] = useState(MOCK_STATUS);
+      const [syncUrl, setSyncUrl] = useState('');
+      const [syncStatus, setSyncStatus] = useState('idle');
+
+      const handleSync = useCallback(async () => {
+        if (!syncUrl.trim()) return;
+        setSyncStatus('loading');
+        try {
+          const resp = await fetch(syncUrl, { cache: 'no-cache' });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.json();
+          // Validate required fields
+          if (!data.version || !data.agent) throw new Error('数据格式不合法');
+          setStatus({ ...data, updated: new Date().toISOString() });
+          setSyncStatus('ok');
+        } catch (e) {
+          setSyncStatus('error');
+          console.error('Sync failed:', e);
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+      }, [syncUrl]);
+
+      // Auto-update the "updated" field
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setStatus(s => ({ ...s, updated: new Date().toISOString() }));
+        }, 30000);
+        return () => clearInterval(timer);
+      }, []);
+
+      return (
+        <div className="container">
+          <Header status={status} />
+          <SyncBar onSync={handleSync} syncStatus={syncStatus} url={syncUrl} setUrl={setSyncUrl} />
+
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, display: 'flex', gap: 8 }}>
+            <span>🔹 Mock 数据正在展示</span>
+            <span>·</span>
+            <span>填入 GitHub raw URL 后点同步可加载真实数据</span>
+          </div>
+
+          <div className="grid">
+            <TaskCard task={status.current_task} />
+            <MemoryCard memory={status.memory} />
+            <SkillsCard skills={status.skills_loaded} />
+            <DecisionsCard decisions={status.recent_decisions} />
+            <StatsCard session={status.session} docStats={status.document_stats} />
+            <AgentInfoCard agent={status.agent} />
+          </div>
+
+          <DataPreview data={status} />
+        </div>
+      );
+    }
+
+    /* ===== Mount ===== */
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

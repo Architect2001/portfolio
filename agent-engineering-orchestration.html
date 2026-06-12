@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多Agent编排与调度</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f0f2f5;--panel:#fff;--line:#dce0e6;--txt:#1f2937;--dim:#6b7280;--faint:#9ca3af;--green:#16a34a;--green-light:#22c55e;--green-bg:#f0fdf4;--mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;--sans:'Inter','system-ui',-apple-system,sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.8}
+  .wrap{max-width:860px;margin:0 auto;padding:48px 28px 80px}
+  .back{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);text-decoration:none;margin-bottom:32px;padding:6px 14px;border:1px solid var(--green);border-radius:8px;background:var(--green-bg);transition:all .2s}
+  .back:hover{background:var(--green);color:#fff}
+  .proj-hero{margin-bottom:40px}
+  .proj-hero h1{font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:12px}
+  .content h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .content h3{font-size:16px;font-weight:600;margin:28px 0 12px;color:var(--green)}
+  .content p{margin-bottom:14px;font-size:14px;color:var(--dim)}
+  .content ul,.content ol{margin-bottom:14px;padding-left:24px}
+  .content li{margin-bottom:6px;font-size:14px;color:var(--dim)}
+  .content strong{color:var(--txt);font-weight:600}
+  .content code{font-family:var(--mono);font-size:12px;background:#eef2ff;padding:2px 6px;border-radius:4px;color:#6366f1}
+  .content pre{background:#1f2937;color:#e5e7eb;padding:16px 20px;border-radius:10px;overflow-x:auto;margin-bottom:20px;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .content hr{margin:40px 0;border:none;border-top:1px solid var(--line)}
+  .content blockquote{margin:16px 0;padding:12px 16px;background:#f9fafb;border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./">← 返回作品集</a>
+<div class="proj-hero"><h1>多Agent编排与调度</h1></div>
+<div class="content">
+<p># 多 Agent 编排与调度 / Multi-Agent Orchestration</p>
+<br>
+<p>&gt; **来源 / Source**：Anthropic Engineering — *How we built our multi-agent research system*（2025-06-13）</p>
+<p>&gt; https://www.anthropic.com/engineering/multi-agent-research-system</p>
+<p>&gt; 作者 / Authors: Jeremy Hadfield, Barry Zhang, Kenneth Lien, Florian Scholz, Jeremy Fox, Daniel Ford</p>
+<p>&gt; 本文为 Claude Research 功能的生产级多 Agent 系统工程复盘。中英对照 + 结构化要点，供知识库 / Agent 检索使用。</p>
+<br>
+<hr>
+<br>
+<p>## 0. 一句话定义 / Definition</p>
+<br>
+<p>&gt; **EN**: A multi-agent system consists of multiple agents (LLMs autonomously using tools in a loop) working together. An agent plans a research process based on the user query, then uses tools to create parallel agents that search simultaneously.</p>
+<p>&gt;</p>
+<p>&gt; **中**：多 Agent 系统 = 多个 Agent（在循环中自主使用工具的 LLM）协同工作。一个主 Agent 根据用户查询规划研究流程，再用工具创建并行的子 Agent 同时检索。</p>
+<br>
+<hr>
+<br>
+<p>## 1. 为什么用多 Agent / Why multi-agent</p>
+<br>
+<p>| 维度 | 要点（中） | Key point (EN) |</p>
+<p>|---|---|---|</p>
+<p>| 适用任务 | 开放式、路径不可预测、无法硬编码固定流程的任务 | Open-ended problems where you can&#x27;t hardcode a fixed path; inherently dynamic and path-dependent |</p>
+<p>| 核心机制 | 搜索的本质是**压缩**：从海量语料里蒸馏洞察。子 Agent 各自用独立上下文窗口并行探索，再把最重要的 token 浓缩回主 Agent | The essence of search is compression; subagents operate in parallel with their own context windows, condensing the most important tokens for the lead agent |</p>
+<p>| 关注点分离 | 每个子 Agent 有独立的工具、prompt、探索轨迹 → 降低路径依赖 | Separation of concerns — distinct tools, prompts, trajectories — reduces path dependency |</p>
+<p>| 性能 | 内部评测：Opus 4 主 + Sonnet 4 子 的多 Agent 系统比单 Agent Opus 4 高 **90.2%**（广度优先任务） | multi-agent (Opus 4 lead + Sonnet 4 subagents) outperformed single-agent Opus 4 by **90.2%** on internal research eval |</p>
+<br>
+<p>### 性能为何提升 / Why it works</p>
+<p>&gt; **EN**: Multi-agent systems work mainly because they help spend enough tokens to solve the problem. Token usage alone explains 80% of the performance variance on BrowseComp; the other factors are number of tool calls and model choice.</p>
+<p>&gt;</p>
+<p>&gt; **中**：多 Agent 之所以有效，核心是它能**投入足够的 token**去解决问题。在 BrowseComp 评测中，仅 token 用量一项就解释了 80% 的性能差异，另两个因素是工具调用次数和模型选择。</p>
+<br>
+<hr>
+<br>
+<p>## 2. 成本与适用边界（关键限定）/ Cost &amp; when NOT to use</p>
+<br>
+<p>&gt; **EN**: Agents typically use ~4× more tokens than chat; multi-agent systems use ~**15×** more tokens than chat. Economically viable only when task value justifies the cost. Some domains are a **bad fit**: those requiring all agents to share the same context, or with many dependencies between agents. Most coding tasks have fewer truly parallelizable subtasks than research, and LLM agents are not yet good at coordinating/delegating in real time.</p>
+<p>&gt;</p>
+<p>&gt; **中**：单 Agent 约耗 4 倍于聊天的 token；多 Agent 约耗 **15 倍**。只有当任务价值足够高、能覆盖成本时才划算。**不适合**的场景：需要所有 Agent 共享同一上下文、或 Agent 之间依赖很多的任务。多数编码任务的可并行子任务远少于研究类，且 LLM Agent 目前还不擅长实时协调与委派。</p>
+<br>
+<p>&gt; ⚠️ 对你（小A）的直接含义：多 Agent 是&quot;广度并行 + 信息超单窗口 + 多复杂工具&quot;才划算的重武器，不是默认架构。Hermes 调度多个编码 Agent 时，先确认任务是否真能并行、是否需共享上下文——编码类的可并行度通常低于研究类。</p>
+<br>
+<hr>
+<br>
+<p>## 3. 架构：Orchestrator-Worker 模式 / Architecture</p>
+<br>
+<p>&gt; **EN**: Orchestrator-worker pattern — a lead agent coordinates while delegating to specialized subagents running in parallel. Unlike traditional RAG (static retrieval of similar chunks), this uses **multi-step search** that dynamically finds info, adapts to findings, and analyzes results.</p>
+<p>&gt;</p>
+<p>&gt; **中**：编排者-工人（orchestrator-worker）模式——主 Agent 协调，把任务委派给并行运行的专职子 Agent。区别于传统 RAG（静态检索相似 chunk），这里用**多步搜索**：动态找信息、随发现调整、分析结果再产出。</p>
+<br>
+<p>### 完整工作流 / Full workflow</p>
+<p>1. 用户提交 query → 系统创建 **LeadResearcher**。</p>
+<p>2. LeadResearcher 先思考approach，**把 plan 存入 Memory 持久化**（因为上下文超 200K token 会被截断，必须保住 plan）。</p>
+<p>3. 创建若干专职 **Subagent**，各带具体研究任务。</p>
+<p>4. 每个 Subagent 独立做 web 搜索、用 **interleaved thinking** 评估工具结果、把发现返回给 LeadResearcher。</p>
+<p>5. LeadResearcher 综合结果，决定是否需要更多研究——需要就再建子 Agent 或调整策略。</p>
+<p>6. 信息足够后退出研究循环，把所有发现交给 **CitationAgent** 处理引用归属。</p>
+<p>7. 带引用的最终结果返回用户。</p>
+<br>
+<p>&gt; 关键设计点：**plan 必须外化到 Memory**，否则长上下文被截断时主 Agent 会&quot;忘记&quot;自己要干嘛。</p>
+<br>
+<hr>
+<br>
+<p>## 4. Prompt 工程八条原则（编排核心）/ 8 Prompting principles</p>
+<br>
+<p>&gt; 多 Agent 系统协调复杂度急剧上升。早期失败案例：简单查询却 spawn 50 个子 Agent、为不存在的来源无限搜网、互相用过多更新干扰对方。每个 Agent 由 prompt 操纵，所以 prompt 工程是主要调控杠杆。</p>
+<br>
+<p>| # | 原则（中） | Principle (EN) | 实操 / Practice |</p>
+<p>|---|---|---|---|</p>
+<p>| 1 | **像你的 Agent 一样思考** | Think like your agents | 用 Console 以真实 prompt+工具做仿真，一步步看 Agent 怎么走，立刻暴露失败模式（已够结果还继续、查询过于冗长、选错工具） |</p>
+<p>| 2 | **教编排者如何委派** | Teach the orchestrator how to delegate | 每个子任务必须给：目标 / 输出格式 / 工具与来源指引 / 清晰任务边界。指令含糊会导致重复劳动、漏洞、找不到信息。反例：主 Agent 只说&quot;研究半导体短缺&quot;，三个子 Agent 一个查 2021 汽车芯片危机、两个重复查 2025 供应链 |</p>
+<p>| 3 | **努力程度匹配查询复杂度** | Scale effort to query complexity | 把缩放规则写进 prompt：简单事实 = 1 Agent + 3-10 次工具调用；直接对比 = 2-4 子 Agent × 10-15 次；复杂研究 = 10+ 子 Agent，职责明确划分 |</p>
+<p>| 4 | **工具设计与选择至关重要** | Tool design and selection are critical | Agent-工具接口和人机接口一样关键。在 Slack 里才有的信息却让 Agent 搜 web，注定失败。给 Agent 明确启发式：先看全部可用工具、工具用途匹配用户意图、优先专用工具而非通用工具 |</p>
+<p>| 5 | **让 Agent 自我改进** | Let agents improve themselves | Claude 4 是优秀的 prompt 工程师：给它一个 prompt + 失败模式，它能诊断并改进。做了个 tool-testing agent：给它有缺陷的 MCP 工具，它反复用几十次、重写工具描述 → 后续 Agent 任务完成时间 **降 40%** |</p>
+<p>| 6 | **先宽后窄** | Start wide, then narrow down | 模仿专家研究法：先看全景再钻细节。Agent 默认爱用过长过专的查询、返回结果很少 → prompt 引导它先用短而宽的查询，评估后再逐步收窄 |</p>
+<p>| 7 | **引导思考过程** | Guide the thinking process | extended thinking 当可控草稿纸：主 Agent 用它规划（评估工具、判断复杂度与子 Agent 数、定义各子 Agent 角色）；子 Agent 用 interleaved thinking 在工具结果后评估质量、找差距、改下一步查询 |</p>
+<p>| 8 | **并行工具调用大幅提速** | Parallel tool calling transforms speed | 两种并行：①主 Agent 一次起 3-5 个子 Agent（而非串行）；②子 Agent 同时用 3+ 工具。复杂查询研究时间 **降最多 90%** |</p>
+<br>
+<p>&gt; **总原则 / Meta-principle**：灌输好的启发式（heuristics），而非死板规则（rigid rules）。研究人类专家怎么做研究，把策略编码进 prompt——拆解难题、评估来源质量、按新信息调整、判断该深还是该广。同时设硬护栏防止 Agent 失控。</p>
+<br>
+<hr>
+<br>
+<p>## 5. 评测 / Evaluation</p>
+<br>
+<p>| 方法 | 要点（中） | Key point (EN) |</p>
+<p>|---|---|---|</p>
+<p>| 小样本立刻开测 | 早期改动效果剧烈（一个 prompt 调整可能把成功率从 30% 拉到 80%），20 个真实查询就够看出变化。别等攒几百条 case 才开测 | Start immediately with ~20 queries; large effect sizes are visible with few cases |</p>
+<p>| LLM-as-judge | 研究输出是自由文本、无唯一正解，用 LLM 评分。单次 LLM 调用 + 单 prompt 输出 0.0–1.0 分 + 通过/不通过，比多 judge 更一致。评分维度：事实准确、引用准确、完整性、来源质量、工具效率 | Single LLM judge call, 0.0–1.0 + pass/fail, most consistent. Rubric: factual accuracy, citation accuracy, completeness, source quality, tool efficiency |</p>
+<p>| 人工评测抓自动化漏掉的 | 人能发现 edge case：异常查询上的幻觉、系统故障、来源选择偏见。例：早期 Agent 总选 SEO 内容农场而非权威但排名低的学术 PDF/个人博客 → 加来源质量启发式解决 | Humans catch hallucinations, failures, source-selection biases automation misses |</p>
+<br>
+<p>&gt; **涌现行为 / Emergent behavior**：多 Agent 系统有未经编程的涌现行为——对主 Agent 的小改动会不可预测地改变子 Agent 行为。所以最好的 prompt 不是严格指令，而是**协作框架**：定义分工、解题方法、努力预算。</p>
+<br>
+<hr>
+<br>
+<p>## 6. 生产可靠性与工程挑战 / Production reliability</p>
+<br>
+<p>&gt; **核心难点 / Core difficulty (EN)**: In agentic systems, minor changes cascade into large behavioral changes. Agents are stateful and errors compound — one failing step can send the agent down an entirely different trajectory.</p>
+<p>&gt;</p>
+<p>&gt; **中**：在 agentic 系统里，微小改动会级联成巨大的行为变化。Agent 是有状态的、错误会复利累积——一步失败就可能让 Agent 滑向完全不同的轨迹。</p>
+<br>
+<p>| 挑战 | 解法（中） | Solution (EN) |</p>
+<p>|---|---|---|</p>
+<p>| Agent 有状态、错误复利 | 不能从头重启（贵且伤体验）→ 构建**断点续跑**系统；让模型知道某工具在失败并自适应；结合确定性保障（重试逻辑、定期 checkpoint） | Resume from where the error occurred; let the agent adapt to failing tools; combine with deterministic safeguards (retry logic, checkpoints) |</p>
+<p>| 调试难（非确定性） | 同样 prompt 跑两次结果不同 → 加**全量生产 tracing**；监控 Agent 决策模式与交互结构（不监控对话内容以保护隐私） | Full production tracing; monitor decision patterns &amp; interaction structures without reading conversation content |</p>
+<p>| 部署需谨慎协调 | Agent 是长期运行的有状态网，部署时 Agent 可能处于流程任意位置 → 用 **rainbow deployment**：新旧版本并存、流量渐进迁移 | Rainbow deployments: keep both versions running, gradually shift traffic |</p>
+<p>| 同步执行成瓶颈 | 当前主 Agent **同步**等子 Agent 全部完成 → 简化协调但造成瓶颈（主 Agent 无法中途引导、子 Agent 间无法协调、单个慢子 Agent 阻塞全局）。异步执行能解锁更多并行，但带来结果协调、状态一致性、错误传播的新难题 | Synchronous execution simplifies coordination but bottlenecks; async would add parallelism but complicates coordination/consistency/error propagation |</p>
+<br>
+<hr>
+<br>
+<p>## 7. 附录：四条额外实战技巧 / Appendix tips</p>
+<br>
+<p>1. **末态评估 / End-state evaluation**</p>
+<p>   &gt; **中**：对会跨多轮修改持久状态的 Agent，评&quot;是否达到正确末态&quot;而非&quot;是否走了规定步骤&quot;——承认 Agent 可走不同路径到同一目标。复杂流程拆成离散 checkpoint，检查特定状态变更是否发生。</p>
+<p>   &gt; **EN**: Evaluate whether the agent reached the correct final state, not whether it followed a prescribed process. Break into discrete checkpoints.</p>
+<br>
+<p>2. **长程对话管理 / Long-horizon conversation management**</p>
+<p>   &gt; **中**：生产 Agent 常跨数百轮。让 Agent 总结已完成阶段、把关键信息存入外部记忆再继续；接近上下文上限时，spawn 干净上下文的新子 Agent，通过精心 handoff 保持连续性；可从记忆里取回 plan 而非丢失之前工作。</p>
+<p>   &gt; **EN**: Summarize completed phases into external memory; spawn fresh subagents with clean contexts near the limit; retrieve stored context (like the plan) instead of losing work.</p>
+<br>
+<p>3. **子 Agent 输出到文件系统，减少&quot;传话游戏&quot; / Minimize the &#x27;game of telephone&#x27;**</p>
+<p>   &gt; **中**：某些结果让子 Agent **直接输出到外部系统**（artifact），只把轻量引用传回主 Agent——避免多级处理中的信息丢失、减少大输出在对话历史里复制的 token 开销。对结构化输出（代码、报告、可视化）尤其有效。</p>
+<p>   &gt; **EN**: Subagents store work in external systems and pass lightweight references back, preventing information loss and token overhead. Works well for structured outputs.</p>
+<br>
+<p>4. **开源 prompt 参考 / Open-source prompts**</p>
+<p>   Anthropic Cookbook 有该系统的示例 prompt：https://platform.claude.com/cookbook/patterns-agents-basic-workflows</p>
+<br>
+<hr>
+<br>
+<p>## 8. 给小A的提炼（非原文，我的标注）</p>
+<br>
+<p>- 你给 Hermes 做的&quot;五条行为规则 + 工具优先级 + 会话复用 + 失败降级&quot;，正好对应本文原则 4（工具设计）+ 第 6 节（错误复利/断点续跑）。本文的&quot;末态评估&quot;和&quot;rainbow deployment&quot;是你目前 Hermes 架构里可能还没有的两块。</p>
+<p>- 你的三 Agent 对抗（A 提案 / B 反方 / C 仲裁）和本文的 orchestrator-worker 是两种不同范式：本文是&quot;主-从并行做广度&quot;，你的是&quot;对抗做质量把关&quot;。两者可叠加——主 Agent 编排并行子 Agent 跑广度，关键节点再插对抗层做仲裁。</p>
+<p>- 限定提醒：本文反复强调多 Agent **贵 15 倍 token**、且编码类并行度低。你做 DeepSeek 成本敏感场景时，别默认上多 Agent，先判断任务可并行度。</p>
+<br>
+</div>
+</div>
+</body>
+</html>

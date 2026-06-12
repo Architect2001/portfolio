@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具设计与失败降级</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f0f2f5;--panel:#fff;--line:#dce0e6;--txt:#1f2937;--dim:#6b7280;--faint:#9ca3af;--green:#16a34a;--green-light:#22c55e;--green-bg:#f0fdf4;--mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;--sans:'Inter','system-ui',-apple-system,sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.8}
+  .wrap{max-width:860px;margin:0 auto;padding:48px 28px 80px}
+  .back{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);text-decoration:none;margin-bottom:32px;padding:6px 14px;border:1px solid var(--green);border-radius:8px;background:var(--green-bg);transition:all .2s}
+  .back:hover{background:var(--green);color:#fff}
+  .proj-hero{margin-bottom:40px}
+  .proj-hero h1{font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:12px}
+  .content h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .content h3{font-size:16px;font-weight:600;margin:28px 0 12px;color:var(--green)}
+  .content p{margin-bottom:14px;font-size:14px;color:var(--dim)}
+  .content ul,.content ol{margin-bottom:14px;padding-left:24px}
+  .content li{margin-bottom:6px;font-size:14px;color:var(--dim)}
+  .content strong{color:var(--txt);font-weight:600}
+  .content code{font-family:var(--mono);font-size:12px;background:#eef2ff;padding:2px 6px;border-radius:4px;color:#6366f1}
+  .content pre{background:#1f2937;color:#e5e7eb;padding:16px 20px;border-radius:10px;overflow-x:auto;margin-bottom:20px;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .content hr{margin:40px 0;border:none;border-top:1px solid var(--line)}
+  .content blockquote{margin:16px 0;padding:12px 16px;background:#f9fafb;border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./">← 返回作品集</a>
+<div class="proj-hero"><h1>工具设计与失败降级</h1></div>
+<div class="content">
+<p># 工具设计与失败降级 / Tool Design &amp; Failure Handling</p>
+<br>
+<p>&gt; **来源 / Source**：Anthropic Engineering — *Writing effective tools for agents — with agents*（2025-09-11）</p>
+<p>&gt; https://www.anthropic.com/engineering/writing-tools-for-agents</p>
+<p>&gt; 作者 / Author: Ken Aizawa 等</p>
+<p>&gt; 中英对照 + 结构化要点，供知识库 / Agent 检索使用。</p>
+<br>
+<hr>
+<br>
+<p>## 0. 核心认知：工具是新型软件契约 / Tools as a new contract</p>
+<br>
+<p>&gt; **EN**: Traditional software = a contract between **deterministic** systems (`getWeather(&quot;NYC&quot;)` always behaves identically). Tools = a contract between **deterministic systems and non-deterministic agents**. Given &quot;Should I bring an umbrella?&quot;, an agent might call the weather tool, answer from memory, or ask a clarifying question — or hallucinate. So we must **design tools for agents, not for other developers/systems**.</p>
+<p>&gt;</p>
+<p>&gt; **中**：传统软件 = **确定性**系统之间的契约（`getWeather(&quot;NYC&quot;)` 每次行为完全一致）。工具 = **确定性系统与非确定性 Agent 之间**的契约。问&quot;今天要带伞吗&quot;，Agent 可能调天气工具、可能凭记忆答、可能先反问位置——也可能幻觉。所以必须**为 Agent 设计工具，而不是为其他开发者/系统设计**。</p>
+<br>
+<p>&gt; 目标：扩大 Agent 能有效解决任务的&quot;表面积&quot;。对 Agent 最&quot;顺手（ergonomic）&quot;的工具，往往人类用起来也直观。</p>
+<br>
+<hr>
+<br>
+<p>## 1. 工作流：和 Agent 一起写工具 / How to write tools</p>
+<br>
+<p>&gt; 流程：**搭原型 → 跑评测 → 与 Agent 协作迭代改进**，循环到 Agent 在真实任务上表现强。</p>
+<br>
+<p>### 搭原型 / Prototype</p>
+<p>- 用 Claude Code 写工具时，给它依赖的库/API/SDK 文档（官方文档站常有扁平的 `llms.txt`，如 Anthropic API 的）。</p>
+<p>- 把工具包进**本地 MCP server** 或 Desktop extension（DXT），即可在 Claude Code / Claude Desktop 里连接测试。</p>
+<p>- 连接命令：`claude mcp add &lt;name&gt; &lt;command&gt; [args...]`。</p>
+<p>- 也可直接把工具传进 Anthropic API 调用做程序化测试。</p>
+<br>
+<p>### 跑评测 / Evaluation</p>
+<p>&gt; **强任务 vs 弱任务 / Strong vs weak eval tasks**：</p>
+<br>
+<p>**强任务（需多次工具调用、贴近真实）**：</p>
+<p>- &quot;给 Jane 约下周会讨论 Acme 项目，附上上次项目规划会的笔记，并预订会议室。&quot;</p>
+<p>- &quot;客户 ID 9182 报告一次购买被扣三次款。找出所有相关日志，判断是否还有其他客户受影响。&quot;</p>
+<br>
+<p>**弱任务（过于简单、不压测工具）**：</p>
+<p>- &quot;给 jane@acme.corp 约下周会。&quot;</p>
+<p>- &quot;在支付日志里搜 `purchase_complete` 和 `customer_id=9182`。&quot;</p>
+<br>
+<p>&gt; 每个 eval prompt 配一个**可验证的响应/结果**。verifier 可简单到字符串比对，或用 Claude 当 judge。**避免过严 verifier**（因格式/标点/有效的不同措辞而误判正确答案）。</p>
+<p>&gt; 别在沙箱里测——要用接近真实复杂度的内部知识库、微服务等。</p>
+<br>
+<p>### 运行评测 / Running</p>
+<p>- 用直接 LLM API 调用 + 简单 agentic loop（while 循环包裹&quot;LLM 调用 ↔ 工具调用&quot;），每个 eval 任务一个循环。</p>
+<p>- 让 eval Agent 输出结构化响应块 **+ reasoning/feedback 块**（放在工具调用前，触发 CoT，提升有效智能）。用 Claude 可开 interleaved thinking。</p>
+<p>- 除 top-level 准确率外，收集：单次工具调用与任务总耗时、工具调用总数、token 消耗、工具错误数。</p>
+<br>
+<p>### 与 Agent 协作改进 / Collaborate</p>
+<p>&gt; **EN**: Concatenate eval transcripts, paste into Claude Code. Claude is expert at analyzing transcripts and refactoring many tools at once. **Most of the advice in this post came from repeatedly optimizing internal tools with Claude Code.** Use held-out test sets to avoid overfitting.</p>
+<p>&gt;</p>
+<p>&gt; **中**：把 eval transcript 拼起来丢给 Claude Code，它擅长分析 transcript、一次性重构大量工具、保持实现与描述自洽。**本文大部分建议正是用 Claude Code 反复优化内部工具得来的。** 用留出测试集防过拟合。</p>
+<br>
+<p>&gt; ⚠️ 关键提醒：**Agent 没说的比说的更重要**。LLM 不总是&quot;言出由衷&quot;。要读原始 transcript（含工具调用与响应），读字里行间，因为 eval Agent 自己也不一定知道正确答案。</p>
+<br>
+<hr>
+<br>
+<p>## 2. 五条工具设计原则 / 5 Principles</p>
+<br>
+<p>### 原则 1：选对要做的工具（和不做的）/ Choosing the right tools</p>
+<p>&gt; **EN**: More tools ≠ better. Common error: tools that merely wrap existing API endpoints. Agents have different **affordances** than traditional software — limited context. A `list_contacts` tool that returns ALL contacts forces the agent to read token-by-token (brute-force search). Better: `search_contacts` or `message_contact`.</p>
+<p>&gt;</p>
+<p>&gt; **中**：工具越多 ≠ 越好。常见错误：只是**包装现有 API 端点**的工具。Agent 的&quot;可供性（affordance）&quot;和传统软件不同——上下文有限。返回全部联系人的 `list_contacts` 会逼 Agent 逐 token 读（暴力搜索）。更好：`search_contacts` 或 `message_contact`。</p>
+<br>
+<p>&gt; **工具应整合（consolidate）多步操作**：</p>
+<p>- 别做 `list_users` + `list_events` + `create_event`，做一个 `schedule_event`（自动找空档并排程）。</p>
+<p>- 别做 `read_logs`，做 `search_logs`（只返回相关日志行 + 周边上下文）。</p>
+<p>- 别做 `get_customer_by_id` + `list_transactions` + `list_notes`，做 `get_customer_context`（一次性汇总客户近期相关信息）。</p>
+<br>
+<p>&gt; 每个工具要有**清晰、独立的用途**。工具过多或重叠会分散 Agent、阻碍高效策略。</p>
+<br>
+<p>### 原则 2：命名空间 / Namespacing</p>
+<p>&gt; **EN**: Agents may access dozens of MCP servers, hundreds of tools. Overlapping/vague tools confuse agents. **Namespacing** (common prefixes) delineates boundaries: by service (`asana_search`, `jira_search`) and by resource (`asana_projects_search`, `asana_users_search`). Prefix- vs suffix-based namespacing has non-trivial effects — choose by your own evals.</p>
+<p>&gt;</p>
+<p>&gt; **中**：Agent 可能接入几十个 MCP server、几百个工具。重叠/含糊的工具会让 Agent 困惑。**命名空间**（共同前缀）划清边界：按服务（`asana_search`、`jira_search`）和按资源（`asana_projects_search`、`asana_users_search`）。前缀式 vs 后缀式命名空间效果差异不小——按自己的 eval 选。</p>
+<br>
+<p>&gt; 把任务的自然子分割反映在工具名里，既减少进上下文的工具数与描述，又把计算从 Agent 上下文卸载到工具调用本身，降低出错风险。</p>
+<br>
+<p>### 原则 3：返回有意义的上下文 / Meaningful context</p>
+<p>&gt; **EN**: Return only **high-signal** information. Prioritize contextual relevance over flexibility. **Eschew low-level technical identifiers** (`uuid`, `256px_image_url`, `mime_type`). Fields like `name`, `image_url`, `file_type` are more useful. Resolving arbitrary UUIDs to semantically meaningful language (or a 0-indexed ID scheme) significantly improves precision and **reduces hallucinations**.</p>
+<p>&gt;</p>
+<p>&gt; **中**：只返回**高信号**信息。相关性优先于灵活性。**避免底层技术标识符**（`uuid`、`256px_image_url`、`mime_type`）。`name`、`image_url`、`file_type` 这类字段更能直接指导 Agent 行动。把任意 UUID 解析成语义有意义的语言（或 0 索引 ID 方案），显著提升精度、**减少幻觉**。</p>
+<br>
+<p>&gt; **`response_format` enum**：暴露一个枚举参数让 Agent 控制返回 `&quot;concise&quot;` 还是 `&quot;detailed&quot;`。例：Slack 工具的 concise 响应只回线程内容（72 token），detailed 含各种 ID（206 token）——concise 省约 ⅓ token。</p>
+<p>&gt; 响应结构（XML/JSON/Markdown）也影响性能，无万能解——因 LLM 按训练数据分布偏好某些格式，按自己 eval 选。</p>
+<br>
+<p>### 原则 4：为 token 效率优化响应 / Token efficiency</p>
+<p>&gt; **EN**: Implement pagination, range selection, filtering, truncation with sensible defaults. Claude Code restricts tool responses to **25,000 tokens by default**. If truncating, steer agents with helpful instructions (e.g. many small targeted searches instead of one broad search).</p>
+<p>&gt;</p>
+<p>&gt; **中**：实现分页、范围选择、过滤、截断，配合合理默认值。Claude Code 默认把工具响应限制在 **25,000 token**。若截断，要用有用的指引引导 Agent（如鼓励做多次小而精的搜索，而非一次大而宽的搜索）。</p>
+<br>
+<p>### 原则 5：Prompt 工程化工具描述 / Prompt-engineering descriptions ⭐</p>
+<p>&gt; **EN**: One of the most effective methods. **Describe your tool as you would to a new hire** — make implicit context explicit (query formats, niche terminology, resource relationships). Avoid ambiguity, enforce with strict data models. Name `user_id` not `user`. Even small refinements yield dramatic improvements — Claude Sonnet 3.5 hit SOTA on SWE-bench Verified after precise tool-description refinements.</p>
+<p>&gt;</p>
+<p>&gt; **中**：最有效的方法之一。**像跟新同事介绍工具那样描述它**——把隐含上下文显式化（查询格式、小众术语定义、资源间关系）。消除歧义、用严格数据模型强制约束。参数命名用 `user_id` 而非 `user`。即便小幅改进描述也能带来巨大提升——Anthropic 精修工具描述后，Sonnet 3.5 在 SWE-bench Verified 上达到 SOTA。</p>
+<br>
+<hr>
+<br>
+<p>## 3. 失败降级与错误处理 / Failure handling（散落全文，集中整理）</p>
+<br>
+<p>&gt; 本主题在原文未独立成章，以下是从全文抽取的失败处理相关要点：</p>
+<br>
+<p>| 场景 | 做法（中） | Practice (EN) |</p>
+<p>|---|---|---|</p>
+<p>| 工具报错（如输入校验失败） | **prompt 工程化错误响应**：清晰传达具体、可执行的改进建议，而非晦涩错误码或 traceback | Prompt-engineer error responses to communicate specific, actionable improvements — not opaque codes/tracebacks |</p>
+<p>| 响应被截断 | 给 Agent 明确指引，引导它走 token 更省的策略（过滤、分页） | Steer agents toward token-efficient strategies (filters, pagination) |</p>
+<p>| Agent 调错工具/给错参数 | 多由工具描述含糊或缺示例引起 → 改描述、加示例 | Often caused by unclear descriptions → improve descriptions/examples |</p>
+<p>| 真实案例 | web search 工具上线时，Claude 多余地给 query 加 `2025`，污染搜索结果、降低性能 → 通过改进工具描述纠正 | Claude needlessly appended `2025` to query → fixed via tool description |</p>
+<p>| 诊断方法 | 分析工具调用指标：大量冗余调用 → 可能需调整分页/token 上限参数；大量无效参数错误 → 描述需更清晰或加示例 | Analyze metrics: redundant calls → tune pagination; param errors → clearer descriptions |</p>
+<br>
+<p>&gt; **设计哲学 / Philosophy**：把软件开发实践从&quot;可预测、确定性模式&quot;重新定向到&quot;非确定性模式&quot;。有效工具的共性：**意图清晰明确、审慎使用 Agent 上下文、可组合进多样工作流、让 Agent 直觉地解决真实任务**。</p>
+<br>
+<hr>
+<br>
+<p>## 4. 给小A的提炼（非原文，我的标注）</p>
+<br>
+<p>- 你给 Hermes 做的&quot;失败分级处理（tiered failure handling）&quot;和&quot;代码编写默认值&quot;补丁，正好对应第 3 节失败降级 + 原则 5（描述工程化）。本文给你的硬依据：**错误响应本身要 prompt 工程化**——不是返回错误码，而是返回&quot;具体该怎么改&quot;的可执行指引，这能直接让 Agent 自我纠正而不卡死。</p>
+<p>- 你反复提到的&quot;工具默认问题（Agent 老用错工具）&quot;——本文原则 1 + 2 给了架构级解法：①别做包装式工具、做整合式工具（consolidate）；②命名空间划清边界。这印证了你的判断&quot;从架构上去掉错误工具，而非用 prompt 劝&quot;——本文同样主张减少/合并工具，而非靠描述硬掰。</p>
+<p>- 原则 3（UUID→语义化 ID 减少幻觉）对你做无 API 的 legacy 系统自动化有用：当你从 DOM/页面抓到的是一堆无意义 ID，先解析成语义标签再喂给 Agent，能显著降幻觉。</p>
+<p>- 可直接复用的工作流：**用 Claude Code 跑工具 eval → 拼 transcript 丢回 Claude Code 让它重构工具**。这是 Anthropic 自己造本文所有结论的方法，你可以套到 Hermes 工具优化上。</p>
+<p>- 配套：工具评测 Cookbook https://platform.claude.com/cookbook/tool-evaluation-tool-evaluation ；工具定义最佳实践见 Anthropic 开发者文档 tool-use 章节。</p>
+<br>
+</div>
+</div>
+</body>
+</html>

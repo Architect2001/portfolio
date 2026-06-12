@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent工程知识库 · 索引</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f0f2f5;--panel:#fff;--line:#dce0e6;--txt:#1f2937;--dim:#6b7280;--faint:#9ca3af;--green:#16a34a;--green-light:#22c55e;--green-bg:#f0fdf4;--mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;--sans:'Inter','system-ui',-apple-system,sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.8}
+  .wrap{max-width:860px;margin:0 auto;padding:48px 28px 80px}
+  .back{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);text-decoration:none;margin-bottom:32px;padding:6px 14px;border:1px solid var(--green);border-radius:8px;background:var(--green-bg);transition:all .2s}
+  .back:hover{background:var(--green);color:#fff}
+  .proj-hero{margin-bottom:40px}
+  .proj-hero h1{font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:12px}
+  .content h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .content h3{font-size:16px;font-weight:600;margin:28px 0 12px;color:var(--green)}
+  .content p{margin-bottom:14px;font-size:14px;color:var(--dim)}
+  .content ul,.content ol{margin-bottom:14px;padding-left:24px}
+  .content li{margin-bottom:6px;font-size:14px;color:var(--dim)}
+  .content strong{color:var(--txt);font-weight:600}
+  .content code{font-family:var(--mono);font-size:12px;background:#eef2ff;padding:2px 6px;border-radius:4px;color:#6366f1}
+  .content pre{background:#1f2937;color:#e5e7eb;padding:16px 20px;border-radius:10px;overflow-x:auto;margin-bottom:20px;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .content hr{margin:40px 0;border:none;border-top:1px solid var(--line)}
+  .content blockquote{margin:16px 0;padding:12px 16px;background:#f9fafb;border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./">← 返回作品集</a>
+<div class="proj-hero"><h1>Agent工程知识库 · 索引</h1></div>
+<div class="content">
+<p># Agent 工程知识库 / Agent Engineering Knowledge Base</p>
+<br>
+<p>&gt; 三个应用层方向的一手资料中英对照笔记，全部源自 Anthropic Engineering 工程博客（最硬的一手源）。</p>
+<p>&gt; 整理给小A及其 Agent 当知识库使用：结构化切块、术语保留英文原词、中英对照、每篇标出处。</p>
+<p>&gt; 整理日期：2026-06（基于当时可访问的线上原文）。</p>
+<br>
+<p>## 目录</p>
+<br>
+<p>| 文件 | 方向 | 一手来源 | 发布日期 |</p>
+<p>|---|---|---|---|</p>
+<p>| `01_多Agent编排_multi-agent-orchestration.md` | 多 Agent 编排与调度 | How we built our multi-agent research system | 2025-06-13 |</p>
+<p>| `02_上下文工程_context-engineering.md` | 上下文工程与记忆管理 | Effective context engineering for AI agents | 2025-09-29 |</p>
+<p>| `03_工具设计与失败降级_tool-design.md` | 工具设计与失败降级 | Writing effective tools for agents — with agents | 2025-09-11 |</p>
+<br>
+<p>## 三者关系</p>
+<br>
+<p>这三篇是 Anthropic 同一批 Applied AI / Engineering 团队写的，互相交叉引用，构成一个完整的 Agent 工程闭环：</p>
+<br>
+<p>- **工具设计**（03）是地基——定义 Agent 与世界交互的契约。</p>
+<p>- **上下文工程**（02）是中层——管理&quot;什么信息进入有限注意力预算&quot;，其中 sub-agent 一节直接引向多 Agent。</p>
+<p>- **多 Agent 编排**（01）是上层——当任务超出单 Agent 单上下文时的扩展架构，其工具设计原则又回指 03。</p>
+<br>
+<p>阅读/检索顺序建议：03 → 02 → 01（地基到上层），或按当前要解决的问题直接定位。</p>
+<br>
+<p>## 给小A的对应关系（速查）</p>
+<br>
+<p>| 你的工作 | 对应文档与章节 |</p>
+<p>|---|---|</p>
+<p>| Hermes 工具优先级 / 会话复用 | 03 原则 1-2、02 第 2-3 节 |</p>
+<p>| Hermes 失败分级处理 | 03 第 3 节、01 第 6 节 |</p>
+<p>| Hermes 三层记忆持久化 | 02 第 4 节（compaction + note-taking + sub-agent） |</p>
+<p>| DeepSeek 三 Agent 对抗 | 01（orchestrator-worker 范式可与对抗层叠加） |</p>
+<p>| 无 API legacy 自动化降幻觉 | 03 原则 3（UUID→语义化 ID） |</p>
+<p>| 给 DeepSeek 写 prompt 改不动 | 02 第 2 节（先校准 system prompt &quot;海拔&quot;） |</p>
+<br>
+<p>&gt; 注：每篇末尾的&quot;给小A的提炼&quot;段落是我（Claude）的标注，非原文，已明确区分。原文内容均为中英对照，可溯源到对应链接。</p>
+<br>
+</div>
+</div>
+</body>
+</html>

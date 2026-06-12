@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow — 文档托管 + 版本归档系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f0f2f5;--panel:#fff;--line:#dce0e6;--txt:#1f2937;--dim:#6b7280;--faint:#9ca3af;--green:#16a34a;--green-light:#22c55e;--green-bg:#f0fdf4;--mono:'JetBrains Mono','SF Mono',ui-monospace,monospace;--sans:'Inter','system-ui',-apple-system,sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.8}
+  .wrap{max-width:860px;margin:0 auto;padding:48px 28px 80px}
+  .back{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);text-decoration:none;margin-bottom:32px;padding:6px 14px;border:1px solid var(--green);border-radius:8px;background:var(--green-bg);transition:all .2s}
+  .back:hover{background:var(--green);color:#fff}
+  .proj-hero{margin-bottom:40px}
+  .proj-hero h1{font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:12px}
+  .content h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .content h3{font-size:16px;font-weight:600;margin:28px 0 12px;color:var(--green)}
+  .content p{margin-bottom:14px;font-size:14px;color:var(--dim)}
+  .content ul,.content ol{margin-bottom:14px;padding-left:24px}
+  .content li{margin-bottom:6px;font-size:14px;color:var(--dim)}
+  .content strong{color:var(--txt);font-weight:600}
+  .content code{font-family:var(--mono);font-size:12px;background:#eef2ff;padding:2px 6px;border-radius:4px;color:#6366f1}
+  .content pre{background:#1f2937;color:#e5e7eb;padding:16px 20px;border-radius:10px;overflow-x:auto;margin-bottom:20px;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .content hr{margin:40px 0;border:none;border-top:1px solid var(--line)}
+  .content blockquote{margin:16px 0;padding:12px 16px;background:#f9fafb;border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./">← 返回作品集</a>
+<div class="proj-hero"><h1>DocFlow — 文档托管 + 版本归档系统</h1></div>
+<div class="content">
+<p># DocFlow — 文档托管 + 版本归档</p>
+<br>
+<p>&gt; **项目名称**：DocFlow</p>
+<p>&gt; **实现路径**：FastAPI + 纯文件(Markdown)存储 + 原生 HTML 前端；读取公开 / 写入 Bearer token；Agent 通过 POST 推送，自动归档历史版本，前端默认显示当前版、右侧时间线回看历史。无数据库，备份即打包 `data/`。</p>
+<br>
+<p>一个极简服务：文档以 Markdown 存在服务器，**读取公开**（点开就能看），**写入需 token**（给 Agent 用）。</p>
+<p>每次写入自动归档旧版本，前端默认显示最新版，右侧时间线可加载任意历史版本。</p>
+<br>
+<p>## 现状（占位）</p>
+<br>
+<p>项目已预置 4 个占位文档，页面打开就有内容，用 Agent 推送真实内容覆盖即可：</p>
+<p>- 个人简历 · 中文版 v4.0 / Resume · English v2.0（分类：个人简历）</p>
+<p>- AI 记忆系统 · Claude / Gemini（分类：AI 记忆系统）</p>
+<br>
+<p>加新文档不用改代码——POST 一个新 id，索引页自动出现。索引页地址 `/`，单文档形如 `/d/resume-cn`。</p>
+<br>
+<p>## 部署注意</p>
+<br>
+<p>- 默认端口 **8000**。你 VPS 已跑 OpenWebUI，启动前确认端口不冲突，要改就改 `--port`。</p>
+<p>- 读取默认公开，链接拿到就能看。简历这类要私密的，按文末「读取也私密」处理后再挂公网。</p>
+<br>
+<hr>
+<br>
+<p>## 设计要点（先看这个）</p>
+<br>
+<p>- **内容与展示分离**：你/Agent 只管推 Markdown，前端样式和版本逻辑不用碰。</p>
+<p>- **版本即文件**：`data/docs/&lt;id&gt;/&lt;version&gt;.md` + 一个 `meta.json` 索引。没有数据库，备份就是打包 `data/` 目录。</p>
+<p>- **当前版本动态决定**：每次 POST 默认把新版本设为「当前」；前端永远先显示当前版本。</p>
+<p>- **历史只读不删**：旧版本文件保留，时间线随时回看。</p>
+<br>
+<p>## 目录结构</p>
+<br>
+<pre>docflow/
+├── app.py            后端（FastAPI）
+├── requirements.txt
+├── seed.py           初始化 4 个占位文档（跑一次）
+├── agent_client.py   Agent 推送示例
+├── static/
+│   ├── index.html    上层索引页（按分类聚合）
+│   └── doc.html       文档查看页（渲染 + 历史时间线）
+└── data/docs/        文档数据（运行后生成）</pre>
+<br>
+<hr>
+<br>
+<p>## 本地 / VPS 启动</p>
+<br>
+<pre>pip install -r requirements.txt
+export DOCFLOW_TOKEN=&quot;你自己的长随机串&quot;      # 必改，写入凭证
+python seed.py                              # 可选：先放占位文档
+uvicorn app:app --host 0.0.0.0 --port 8000</pre>
+<br>
+<p>打开 `http://&lt;服务器IP&gt;:8000/` 即索引页。单文档链接形如 `http://&lt;IP&gt;:8000/d/resume-cn`。</p>
+<br>
+<p>### 挂成常驻服务（systemd）</p>
+<br>
+<p>`/etc/systemd/system/docflow.service`：</p>
+<br>
+<pre>[Unit]
+Description=DocFlow
+After=network.target
+
+[Service]
+WorkingDirectory=/root/docflow
+Environment=DOCFLOW_TOKEN=你自己的长随机串
+ExecStart=/usr/bin/uvicorn app:app --host 0.0.0.0 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</pre>
+<br>
+<pre>systemctl daemon-reload &amp;&amp; systemctl enable --now docflow</pre>
+<br>
+<p>### 可选：Nginx 反代 + HTTPS</p>
+<br>
+<p>你 VPS 已跑 OpenWebUI，端口别撞即可。Nginx 片段：</p>
+<br>
+<pre>location /docs/ {
+    proxy_pass http://127.0.0.1:8000/;
+    proxy_set_header Host $host;
+}</pre>
+<br>
+<p>证书用 certbot 自动签。注意：读取是公开的，链接拿到就能看，**别把敏感简历放公网无鉴权**——要私密就给读取也加一层（见下）。</p>
+<br>
+<hr>
+<br>
+<p>## Agent 接入</p>
+<br>
+<p>### 接口表</p>
+<br>
+<p>| 方法 | 路径 | 鉴权 | 说明 |</p>
+<p>|---|---|---|---|</p>
+<p>| GET | `/api/docs` | 否 | 所有文档元数据 |</p>
+<p>| GET | `/api/docs/{id}` | 否 | 单文档元数据（含版本时间线） |</p>
+<p>| GET | `/api/docs/{id}/raw?version=x` | 否 | 某版本 Markdown 原文（缺省取当前） |</p>
+<p>| POST | `/api/docs/{id}` | **是** | 创建/更新一个版本 |</p>
+<br>
+<p>### POST 字段</p>
+<br>
+<p>| 字段 | 必填 | 说明 |</p>
+<p>|---|---|---|</p>
+<p>| `content` | ✓ | Markdown 正文 |</p>
+<p>| `version` | ✓ | 版本号，如 `4.0` |</p>
+<p>| `title` | 首次建议 | 文档标题 |</p>
+<p>| `category` | 首次建议 | 分类（决定索引页分组） |</p>
+<p>| `note` |  | 本次更新说明，显示在时间线 |</p>
+<p>| `set_current` |  | 默认 `true`；补录旧版本时传 `false` |</p>
+<br>
+<p>### curl 示例</p>
+<br>
+<pre>curl -X POST http://127.0.0.1:8000/api/docs/resume-cn \
+  -H &quot;Authorization: Bearer 你的TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;content&quot;:&quot;# 我的简历\n\n...&quot;, &quot;version&quot;:&quot;4.0&quot;,
+       &quot;title&quot;:&quot;个人简历 · 中文版&quot;, &quot;category&quot;:&quot;个人简历&quot;,
+       &quot;note&quot;:&quot;更新工作经历&quot;}&#x27;</pre>
+<br>
+<p>### Python（Agent 直接用）</p>
+<br>
+<p>见 `agent_client.py`，核心就一个 `push()` 函数：</p>
+<br>
+<pre>from agent_client import push
+push(&quot;resume-cn&quot;, md_text, &quot;4.0&quot;,
+     title=&quot;个人简历 · 中文版&quot;, category=&quot;个人简历&quot;, note=&quot;更新&quot;)</pre>
+<br>
+<hr>
+<br>
+<p>## 常见操作</p>
+<br>
+<p>- **加新文档**：直接 POST 一个新 `id` 即可，索引页自动出现，无需改代码。</p>
+<p>- **改分类/标题**：POST 时带新的 `category`/`title`，会覆盖元数据。</p>
+<p>- **回滚**：把旧版本内容用新版本号再 POST 一次即可（旧版本始终在）。</p>
+<p>- **备份**：`tar czf backup.tgz data/`。</p>
+<p>- **改 token**：改环境变量重启服务。</p>
+<br>
+<p>## 如果要读取也私密</p>
+<br>
+<p>`app.py` 里给 GET 接口和页面路由加上和 POST 一样的 `check_token`，前端 fetch 时带上 `Authorization` 头（或改成短期签名链接）。当前默认是公开读取，符合「点开就能看」。</p>
+<br>
+<hr>
+<br>
+<p>![Hermes stamp](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAFfElEQVR4nG2VW2xdxRWG11oz+3ruxoTEjp2kzsW5EDsElyZFCUkahCooJARo5BYE4oW24qFSVR6glWiFKlAf+kBFQZFpIWrVOyREEQT7OFKkNrFdxRcUxzhNsC1sY8c+Z599LnvPzOLhRAEh1tuMtD6tufz/j8YY+FIxMwCwYSEFABSLxTiOy2E4NzefSqWam5uSqRQAaK2JqN4AgIAg4etKSDE6MnrinZMjo2NRFFUqlWo18n23IZe7s2vnQ4cebGltqU+AiPUW1FrfXDMzMwtBx97oOf72X6q1qpQSEYUQQgqjWWutjb4lm338yR8efviQ1hoREYDrIARkYEQ0xgghXvv9H/705nE/6SutCIlIRHEkiCwpERGlcC0nrtUePfrIE08+XmcBANWJiGi0FkL09eb/9td/ZnKZOI6JhBCSCB3bMcxKa8MskWzL8hKJt9/6c3/+rBDCGIOIBAAMwMwkRKFQeLPnrVw2q5SSUlrSElIQkRTC9zxARCTHcaM4KpVKgNBz7I9hGAohmJmAGYmM1oh4+tTpq1evKaMRyZKWMUaQIKT6baYSSSIsV8qVapWZpWVNTE7m+/oR0WhDSBSXS8KytNYfnOkFgCAIhBBEJKUgQmZmYEQwbBhAG42IhhkACOm9k6cAgASRqpXD6XMQl678/9rHE5OO6xARs4mVAkQEBAQA0MYorRFRKwOIiGCM9hP+4OD/hi+OEBHpWmjiJVaVgQtDQRBIIZAIiYRAYNZsADHpe00NWTaGiOqfxDDHsUJA27bz+Twzk5O+1Vt1D3m3Tlwe93yfAZiNNqYxm0knE4KEJW3HcXbs6Ni2oc0mirVGAKVUMQiiOMpkMql0enZ2Thqt/YaVhUIhnU6nUimllDGMRt97YO/4lamRsXHbtj0vcf8D352f/2zVisZf/vqVqdl513Ua0snrxVKxGCwvLZfLITEgAAfFUmtriyWl0UZr41pYWF52LZFNpWwpOzu2rVm9srB0fWh0ZO9dOyRRwrafffQh17YFUe+HvWFYlgAMQK7nLiwsBEEgLatSLa9oarr8yezlickH7jtw992729a2Tk/NzExPNTbkqpVKWK1ubF21GARBKUz4fiabLYdlqisjl8tOT0/HSsVxpA1v27zlqe5Htm/eft/BA53fvMNPJlauan6q+/vf279HWg4bM18ovvaPE5Ylg1Kwbt1az3PppsQ6OztaWlZXKxXXsd870++b2isv/HhNa1NtYWHp4wnbtsDzZxYLU5/OEWFYqTmuJ4RYu27Nrl3f2rptKxpj6qBLly69/vqxgQtDtiW1Npu/0Xr0sSPpTBqVShpTsuyh4dGLI+Pnzp8nQgCIomj3t3d1dz/W1dUlpcS6rTAzEV28OJzvOzs29tHY2EdK6Vwm+9LzPz0/MPjumf7bGht/0H305KnTvfn+pJ/c2L7xyJFDbevb2ts31Qk3jK1+wI6O7evXt31yberD3r5qpbyr8/Y7unZ+Nj21vLy875497e0bXnr5t+l0xpJWtVLZt2+vn0gopQQRwA1B3mBprT3P27ylParVBi4MCsfJv3/m3b5zHdtv39q+6b/nB2dmZjzX01pdHp94+ulnSqWSFLJutl+A6iwEVEoNDg5dvTr1u1ffePX433MrbvvO/v3/GRjs7Oxobm66vnTd8/10Jr2wuHDiX/8OyyESMvNXPZuBhRCJRCIslycnr7ie++Lzz23auoVZH+vpiaIo6TtBsRAr1X3/w75teZ5Xz4uvTlTf/flzPzt8+MENG9c/+5MfNa1umpv99ODBAwuLi7c05H7zq1/s27O7q2vn7jt3DA+P9uXPEhEzf/FqN/PgZhZ8OXMMg9bKGCOlFESValUQRXFsDKfTKWb+HD091+weNF3GAAAAAElFTkSuQmCC&quot; style=&quot;width:16px;height:16px;vertical-align:middle&quot;&gt; 本系统由 Hermes Agent 维护。文档自动归档、版本管理、知识库分类均由 Hermes 在执行流程中自动完成。</p>
+<br>
+</div>
+</div>
+</body>
+</html>
